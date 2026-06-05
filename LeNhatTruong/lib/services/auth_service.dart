@@ -94,6 +94,92 @@ class AuthService {
     }
   }
 
+  Future<Map<String, dynamic>> getUserProfileStats() async {
+    final token = await getAccessToken();
+    final response = await http.get(
+      Uri.parse('${AppConstants.baseUrl}/api/users/profile-stats'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Không thể lấy thông tin thống kê người dùng');
+    }
+  }
+
+  Future<void> createRealOrder() async {
+    final token = await getAccessToken();
+    final response = await http.post(
+      Uri.parse('${AppConstants.baseUrl}/api/users/orders'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Không thể tạo đơn hàng trên server');
+    }
+  }
+
+  Future<void> simulateAddOrder() async {
+    final token = await getAccessToken();
+    await http.post(
+      Uri.parse('${AppConstants.baseUrl}/api/users/simulate/order'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<void> simulateAddAddress() async {
+    final token = await getAccessToken();
+    await http.post(
+      Uri.parse('${AppConstants.baseUrl}/api/users/simulate/address'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<void> simulateAddCard() async {
+    final token = await getAccessToken();
+    await http.post(
+      Uri.parse('${AppConstants.baseUrl}/api/users/simulate/card'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<void> simulateAddCoupon() async {
+    final token = await getAccessToken();
+    await http.post(
+      Uri.parse('${AppConstants.baseUrl}/api/users/simulate/coupon'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<void> simulateAddReview() async {
+    final token = await getAccessToken();
+    await http.post(
+      Uri.parse('${AppConstants.baseUrl}/api/users/simulate/review'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
   Future<void> logout() async {
     try {
       final token = await getAccessToken();

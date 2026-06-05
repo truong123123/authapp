@@ -18,6 +18,9 @@ public class CustomerAddress {
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private java.util.UUID id;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(name = "customer_id")
     private java.util.UUID customerId;
 

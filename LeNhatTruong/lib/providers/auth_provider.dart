@@ -52,13 +52,7 @@ class AuthProvider extends ChangeNotifier {
     _setError(null);
     try {
       final auth = await _authService.login(email, password);
-      _user = UserResponse(
-        id: 0,
-        name: auth.name,
-        email: auth.email,
-        provider: 'local',
-        roles: [],
-      );
+      _user = await _authService.getMe();
       _status = AuthStatus.authenticated;
       _setLoading(false);
       return true;

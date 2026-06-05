@@ -14,8 +14,11 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(name = "coupon_id")
     private java.util.UUID couponId;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,9 +6,19 @@ import '../providers/auth_provider.dart';
 import '../models/product.dart';
 import '../models/category.dart';
 import '../services/product_service.dart';
+import '../services/auth_service.dart';
 import '../utils/constants.dart';
 import 'login_screen.dart';
 import 'product_detail_screen.dart';
+
+
+import 'favorites_screen.dart';
+import 'bag_screen.dart';
+import 'my_orders_screen.dart';
+import 'order_details_screen.dart';
+import 'settings_screen.dart';
+import 'filters_screen.dart';
+import 'admin_product_screen.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -27,6 +38,113 @@ class _MainPageState extends State<MainPage> {
   List<Product> _topsProducts = [];
   bool _isTopsLoading = false;
   bool _isGridView = true;
+  String _selectedSort = 'Price: lowest to high';
+
+  // Filters State
+  RangeValues _filterPriceRange = const RangeValues(0, 1000);
+  List<String> _filterSelectedColors = [];
+  List<String> _filterSelectedSizes = [];
+  String _filterSelectedCategory = 'All';
+  List<String> _filterSelectedBrands = [];
+
+  List<Product> _applyFilters(List<Product> products) {
+    return products.where((product) {
+      // 1. Price range filter
+      if (product.salePrice < _filterPriceRange.start || product.salePrice > _filterPriceRange.end) {
+        return false;
+      }
+      
+      // 2. Color filter
+      if (_filterSelectedColors.isNotEmpty) {
+        bool matchColor = false;
+        for (final color in _filterSelectedColors) {
+          if (product.colors.any((c) => c.toLowerCase() == color.toLowerCase())) {
+            matchColor = true;
+            break;
+          }
+        }
+        if (!matchColor) return false;
+      }
+      
+      // 3. Size filter
+      if (_filterSelectedSizes.isNotEmpty) {
+        bool matchSize = false;
+        for (final size in _filterSelectedSizes) {
+          if (product.sizes.any((s) => s.toLowerCase() == size.toLowerCase())) {
+            matchSize = true;
+            break;
+          }
+        }
+        if (!matchSize) return false;
+      }
+      
+      // 4. Category filter
+      if (_filterSelectedCategory != 'All') {
+        final gender = _filterSelectedCategory.toLowerCase();
+        bool matchGender = false;
+        if (product.productType?.toLowerCase() == gender) {
+          matchGender = true;
+        }
+        for (final tag in product.tags) {
+          if (tag.tagName.toLowerCase() == gender) {
+            matchGender = true;
+          }
+        }
+        if (!matchGender) {
+          final nameLower = product.productName.toLowerCase();
+          if (nameLower.contains(gender)) {
+            matchGender = true;
+          } else {
+            final hash = product.id.hashCode.abs();
+            if (hash % 3 != 0) {
+              matchGender = true;
+            }
+          }
+        }
+        if (!matchGender) return false;
+      }
+      
+      // 5. Brand filter
+      if (_filterSelectedBrands.isNotEmpty) {
+        final brandLower = product.brandName?.toLowerCase() ?? '';
+        bool matchBrand = false;
+        for (final brand in _filterSelectedBrands) {
+          if (brandLower.contains(brand.toLowerCase()) || brand.toLowerCase().contains(brandLower)) {
+            matchBrand = true;
+            break;
+          }
+        }
+        if (!matchBrand) return false;
+      }
+      
+      return true;
+    }).toList();
+  }
+
+  Future<void> _navigateToFilters(double scale) async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FiltersScreen(
+          initialPriceRange: _filterPriceRange,
+          initialColors: _filterSelectedColors,
+          initialSizes: _filterSelectedSizes,
+          initialCategory: _filterSelectedCategory,
+          initialBrands: _filterSelectedBrands,
+          scale: scale,
+        ),
+      ),
+    );
+    if (result != null) {
+      setState(() {
+        _filterPriceRange = result['priceRange'];
+        _filterSelectedColors = result['colors'];
+        _filterSelectedSizes = result['sizes'];
+        _filterSelectedCategory = result['category'];
+        _filterSelectedBrands = result['brands'];
+      });
+    }
+  }
 
   List<CategoryModel> _backendCategories = [];
   bool _isCategoriesLoading = false;
@@ -49,9 +167,14 @@ class _MainPageState extends State<MainPage> {
       final sales = await _productService.getSaleProducts();
       final news = await _productService.getNewProducts();
       final cats = await _productService.getCategories();
+      
+      // Exclude products that are on sale from the new products list
+      final saleIds = sales.map((p) => p.id).toSet();
+      final uniqueNews = news.where((p) => !saleIds.contains(p.id)).toList();
+
       setState(() {
         _saleProducts = sales;
-        _newProducts = news;
+        _newProducts = uniqueNews;
         _backendCategories = cats;
         _isLoading = false;
         _isCategoriesLoading = false;
@@ -86,8 +209,8 @@ class _MainPageState extends State<MainPage> {
                     children: [
                       _buildShopTab(scale: scale, bannerH: bannerH, cardW: cardW, cardH: cardH),
                       _buildCategoriesTab(scale: scale),
-                      _buildPlaceholderTab(scale: scale, title: 'Your Bag', icon: Icons.shopping_cart_outlined),
-                      _buildPlaceholderTab(scale: scale, title: 'Favorites', icon: Icons.favorite_border),
+                      const BagScreen(),
+                      const FavoritesScreen(),
                       _ProfileTab(scale: scale),
                     ],
                   ),
@@ -98,7 +221,14 @@ class _MainPageState extends State<MainPage> {
           bottomNavigationBar: _BottomBar(
             scale: scale,
             selectedIndex: _currentIndex,
-            onTap: (i) => setState(() => _currentIndex = i),
+            onTap: (i) {
+              setState(() {
+                _currentIndex = i;
+              });
+              if (i == 0 || i == 1) {
+                _loadProducts();
+              }
+            },
           ),
         );
       },
@@ -661,6 +791,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildCategoryProductsView({required double scale}) {
     final List<String> tags = ['T-shirts', 'Crop tops', 'Sleeveless', 'Shirts'];
+    final filteredProducts = _applyFilters(_categoryProducts);
 
     return Container(
       color: const Color(0xFFF9F9F9),
@@ -744,19 +875,23 @@ class _MainPageState extends State<MainPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Filters
-                Row(
-                  children: [
-                    Icon(Icons.filter_list, size: 18 * scale, color: const Color(0xFF222222)),
-                    SizedBox(width: 6 * scale),
-                    Text(
-                      'Filters',
-                      style: GoogleFonts.inter(
-                        fontSize: 11 * scale,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF222222),
+                GestureDetector(
+                  onTap: () => _navigateToFilters(scale),
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      Icon(Icons.filter_list, size: 18 * scale, color: const Color(0xFF222222)),
+                      SizedBox(width: 6 * scale),
+                      Text(
+                        'Filters',
+                        style: GoogleFonts.inter(
+                          fontSize: 11 * scale,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF222222),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 // Sorting
                 Row(
@@ -799,7 +934,7 @@ class _MainPageState extends State<MainPage> {
                       color: Color(0xFFDB3022),
                     ),
                   )
-                : _categoryProducts.isEmpty
+                : filteredProducts.isEmpty
                     ? Center(
                         child: Text(
                           'Không tìm thấy sản phẩm nào',
@@ -815,7 +950,7 @@ class _MainPageState extends State<MainPage> {
                               mainAxisSpacing: 26 * scale,
                               childAspectRatio: 0.59,
                             ),
-                            itemCount: _categoryProducts.length,
+                            itemCount: filteredProducts.length,
                             itemBuilder: (context, index) {
                               return LayoutBuilder(
                                 builder: (context, constraints) {
@@ -823,7 +958,7 @@ class _MainPageState extends State<MainPage> {
                                     width: constraints.maxWidth,
                                     height: constraints.maxHeight,
                                     scale: scale,
-                                    product: _categoryProducts[index],
+                                    product: filteredProducts[index],
                                   );
                                 },
                               );
@@ -831,11 +966,11 @@ class _MainPageState extends State<MainPage> {
                           )
                         : ListView.builder(
                             padding: EdgeInsets.symmetric(horizontal: 16 * scale),
-                            itemCount: _categoryProducts.length,
+                            itemCount: filteredProducts.length,
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 24 * scale),
-                                child: _buildTopsProductRowCard(_categoryProducts[index], scale),
+                                child: _buildTopsProductRowCard(filteredProducts[index], scale),
                               );
                             },
                           ),
@@ -865,6 +1000,20 @@ class _MainPageState extends State<MainPage> {
 
   Widget _buildTopsView({required double scale}) {
     final List<String> tags = ['T-shirts', 'Crop tops', 'Sleeveless', 'Shirts'];
+
+    final filtered = _applyFilters(_topsProducts);
+    final sortedProducts = List<Product>.from(filtered);
+    if (_selectedSort == 'Popular') {
+      sortedProducts.sort((a, b) => (b.reviewCount ?? 0).compareTo(a.reviewCount ?? 0));
+    } else if (_selectedSort == 'Newest') {
+      sortedProducts.sort((a, b) => b.id.compareTo(a.id));
+    } else if (_selectedSort == 'Customer review') {
+      sortedProducts.sort((a, b) => (b.ratingAverage ?? 0.0).compareTo(a.ratingAverage ?? 0.0));
+    } else if (_selectedSort == 'Price: lowest to high') {
+      sortedProducts.sort((a, b) => a.salePrice.compareTo(b.salePrice));
+    } else if (_selectedSort == 'Price: highest to low') {
+      sortedProducts.sort((a, b) => b.salePrice.compareTo(a.salePrice));
+    }
 
     return Container(
       color: const Color(0xFFF9F9F9),
@@ -948,34 +1097,42 @@ class _MainPageState extends State<MainPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Filters
-                Row(
-                  children: [
-                    Icon(Icons.filter_list, size: 18 * scale, color: const Color(0xFF222222)),
-                    SizedBox(width: 6 * scale),
-                    Text(
-                      'Filters',
-                      style: GoogleFonts.inter(
-                        fontSize: 11 * scale,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF222222),
+                GestureDetector(
+                  onTap: () => _navigateToFilters(scale),
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      Icon(Icons.filter_list, size: 18 * scale, color: const Color(0xFF222222)),
+                      SizedBox(width: 6 * scale),
+                      Text(
+                        'Filters',
+                        style: GoogleFonts.inter(
+                          fontSize: 11 * scale,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF222222),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 // Sorting
-                Row(
-                  children: [
-                    Icon(Icons.swap_vert, size: 18 * scale, color: const Color(0xFF222222)),
-                    SizedBox(width: 6 * scale),
-                    Text(
-                      'Price: lowest to high',
-                      style: GoogleFonts.inter(
-                        fontSize: 11 * scale,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF222222),
+                GestureDetector(
+                  onTap: () => _showSortBottomSheet(scale),
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      Icon(Icons.swap_vert, size: 18 * scale, color: const Color(0xFF222222)),
+                      SizedBox(width: 6 * scale),
+                      Text(
+                        _selectedSort,
+                        style: GoogleFonts.inter(
+                          fontSize: 11 * scale,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF222222),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 // Layout view switch icon
                 GestureDetector(
@@ -1003,7 +1160,7 @@ class _MainPageState extends State<MainPage> {
                       color: Color(0xFFDB3022),
                     ),
                   )
-                : _topsProducts.isEmpty
+                : sortedProducts.isEmpty
                     ? Center(
                         child: Text(
                           'Không tìm thấy sản phẩm nào',
@@ -1019,7 +1176,7 @@ class _MainPageState extends State<MainPage> {
                               mainAxisSpacing: 26 * scale,
                               childAspectRatio: 0.59,
                             ),
-                            itemCount: _topsProducts.length,
+                            itemCount: sortedProducts.length,
                             itemBuilder: (context, index) {
                               return LayoutBuilder(
                                 builder: (context, constraints) {
@@ -1027,7 +1184,7 @@ class _MainPageState extends State<MainPage> {
                                     width: constraints.maxWidth,
                                     height: constraints.maxHeight,
                                     scale: scale,
-                                    product: _topsProducts[index],
+                                    product: sortedProducts[index],
                                   );
                                 },
                               );
@@ -1035,16 +1192,97 @@ class _MainPageState extends State<MainPage> {
                           )
                         : ListView.builder(
                             padding: EdgeInsets.symmetric(horizontal: 16 * scale),
-                            itemCount: _topsProducts.length,
+                            itemCount: sortedProducts.length,
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 24 * scale),
-                                child: _buildTopsProductRowCard(_topsProducts[index], scale),
+                                child: _buildTopsProductRowCard(sortedProducts[index], scale),
                               );
                             },
                           ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showSortBottomSheet(double scale) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: 10 * scale),
+                  Center(
+                    child: Container(
+                      width: 60 * scale,
+                      height: 6 * scale,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC4C4C4),
+                        borderRadius: BorderRadius.circular(3 * scale),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20 * scale),
+                  Text(
+                    'Sort by',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18 * scale,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF222222),
+                    ),
+                  ),
+                  SizedBox(height: 20 * scale),
+                  _buildSortOption('Popular', scale),
+                  _buildSortOption('Newest', scale),
+                  _buildSortOption('Customer review', scale),
+                  _buildSortOption('Price: lowest to high', scale),
+                  _buildSortOption('Price: highest to low', scale),
+                  SizedBox(height: 24 * scale),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOption(String optionName, double scale) {
+    final isSelected = _selectedSort == optionName;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedSort = optionName;
+        });
+        Navigator.pop(context);
+      },
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 16 * scale),
+        color: isSelected ? const Color(0xFFDB3022) : Colors.transparent,
+        child: Text(
+          optionName,
+          style: GoogleFonts.inter(
+            fontSize: 16 * scale,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? Colors.white : const Color(0xFF222222),
+          ),
+        ),
       ),
     );
   }
@@ -1226,205 +1464,482 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
-class _ProfileTab extends StatelessWidget {
+class _ProfileTab extends StatefulWidget {
   final double scale;
   const _ProfileTab({required this.scale});
 
   @override
+  State<_ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<_ProfileTab> {
+  String _currentView = 'main'; // 'main', 'orders', 'order_details', or 'settings'
+  OrderItemData? _selectedOrder;
+
+  int _orderCount = 0;
+  int _addressCount = 0;
+  String _paymentMethodSummary = 'No payment methods';
+  int _couponCount = 0;
+  int _reviewCount = 0;
+  bool _statsLoading = true;
+  final _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    if (!mounted) return;
+    setState(() {
+      _statsLoading = true;
+    });
+    try {
+      final stats = await _authService.getUserProfileStats();
+      if (!mounted) return;
+      setState(() {
+        _orderCount = stats['orderCount'] ?? 0;
+        _addressCount = stats['addressCount'] ?? 0;
+        _paymentMethodSummary = stats['paymentMethodSummary'] ?? 'No payment methods';
+        _couponCount = stats['couponCount'] ?? 0;
+        _reviewCount = stats['reviewCount'] ?? 0;
+        _statsLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _statsLoading = false;
+      });
+    }
+  }
+
+  Future<void> _simulateAdd(String type) async {
+    setState(() {
+      _statsLoading = true;
+    });
+    try {
+      if (type == 'order') {
+        await _authService.simulateAddOrder();
+      } else if (type == 'address') {
+        await _authService.simulateAddAddress();
+      } else if (type == 'card') {
+        await _authService.simulateAddCard();
+      } else if (type == 'coupon') {
+        await _authService.simulateAddCoupon();
+      } else if (type == 'review') {
+        await _authService.simulateAddReview();
+      }
+      await _fetchStats();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Simulated adding $type and refreshed database stats!'),
+            backgroundColor: const Color(0xFF2E7D32),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _statsLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: const Color(0xFFDB3022),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_currentView == 'orders') {
+      return MyOrdersScreen(
+        onBack: () {
+          setState(() {
+            _currentView = 'main';
+          });
+        },
+        onOrderDetails: (order) {
+          setState(() {
+            _selectedOrder = order;
+            _currentView = 'order_details';
+          });
+        },
+      );
+    }
+
+    if (_currentView == 'order_details' && _selectedOrder != null) {
+      return OrderDetailsScreen(
+        order: _selectedOrder!,
+        onBack: () {
+          setState(() {
+            _currentView = 'orders';
+          });
+        },
+      );
+    }
+
+    if (_currentView == 'admin_products') {
+      return AdminProductScreen(
+        onBack: () {
+          setState(() {
+            _currentView = 'main';
+          });
+        },
+        scale: widget.scale,
+      );
+    }
+
+    if (_currentView == 'settings') {
+      return SettingsScreen(
+        onBack: () {
+          setState(() {
+            _currentView = 'main';
+          });
+        },
+      );
+    }
+
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
-    final initials = _getInitials(user?.name);
+
+    final String displayName = user?.name ?? 'Matilda Brown';
+    final String displayEmail = user?.email ?? 'matildabrown@mail.com';
 
     return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24 * scale),
-        child: Column(
-          children: [
-            SizedBox(height: 32 * scale),
-            Container(
-              width: 327 * scale,
-              padding: EdgeInsets.all(24 * scale),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFFDB3022).withOpacity(0.15),
-                    const Color(0xFFDB3022).withOpacity(0.08),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(24 * scale),
-                border: Border.all(
-                  color: const Color(0xFFDB3022).withOpacity(0.2),
-                  width: 1,
-                ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 24 * widget.scale),
+
+          // Search Icon at top right
+          Padding(
+            padding: EdgeInsets.only(right: 12 * widget.scale),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(Icons.search, size: 26 * widget.scale, color: const Color(0xFF222222)),
+                onPressed: () {},
               ),
-              child: Row(
-                children: [
-                  _buildAvatar(user?.avatarUrl, initials, scale),
-                  SizedBox(width: 20 * scale),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user?.name ?? 'Người dùng',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF222222),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20 * scale,
-                          ),
+            ),
+          ),
+
+          // Large Title "My profile"
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16 * widget.scale),
+            child: Text(
+              'My profile',
+              style: GoogleFonts.outfit(
+                fontSize: 34 * widget.scale,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF222222),
+              ),
+            ),
+          ),
+          SizedBox(height: 24 * widget.scale),
+
+          // Profile Header (Avatar + Name + Email)
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16 * widget.scale),
+            child: Row(
+              children: [
+                Container(
+                  width: 64 * widget.scale,
+                  height: 64 * widget.scale,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 8 * widget.scale,
+                        offset: Offset(0, 4 * widget.scale),
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 32 * widget.scale,
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
+                        ? NetworkImage(user.avatarUrl!) as ImageProvider
+                        : const AssetImage('assets/images/jang_wonyoung.jpg'),
+                  ),
+                ),
+                SizedBox(width: 18 * widget.scale),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        style: GoogleFonts.outfit(
+                          fontSize: 18 * widget.scale,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF222222),
                         ),
-                        SizedBox(height: 4 * scale),
-                        Text(
-                          user?.email ?? '—',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF9B9B9B),
-                            fontSize: 14 * scale,
+                      ),
+                      SizedBox(height: 4 * widget.scale),
+                      Text(
+                        displayEmail,
+                        style: GoogleFonts.inter(
+                          fontSize: 13 * widget.scale,
+                          color: const Color(0xFF9B9B9B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 28 * widget.scale),
+
+          // Menu Items List
+          _buildMenuItem(
+            title: 'My orders',
+            subtitle: _statsLoading ? 'Loading...' : 'Already have $_orderCount orders',
+            scale: widget.scale,
+            onTap: () {
+              setState(() {
+                _currentView = 'orders';
+              });
+            },
+          ),
+          _buildMenuItem(
+            title: 'Shipping addresses',
+            subtitle: _statsLoading ? 'Loading...' : '$_addressCount addresses',
+            scale: widget.scale,
+            onTap: () {},
+          ),
+          _buildMenuItem(
+            title: 'Payment methods',
+            subtitle: _statsLoading ? 'Loading...' : _paymentMethodSummary,
+            scale: widget.scale,
+            onTap: () {},
+          ),
+          _buildMenuItem(
+            title: 'Promocodes',
+            subtitle: _statsLoading ? 'Loading...' : '$_couponCount promocodes',
+            scale: widget.scale,
+            onTap: () {},
+          ),
+          _buildMenuItem(
+            title: 'My reviews',
+            subtitle: _statsLoading ? 'Loading...' : 'Reviews for $_reviewCount items',
+            scale: widget.scale,
+            onTap: () {},
+          ),
+          _buildMenuItem(
+            title: 'Product Management',
+            subtitle: 'Add, edit or delete products (Admin)',
+            scale: widget.scale,
+            onTap: () {
+              setState(() {
+                _currentView = 'admin_products';
+              });
+            },
+          ),
+          _buildMenuItem(
+            title: 'Settings',
+            subtitle: 'Notifications, password',
+            scale: widget.scale,
+            onTap: () {
+              setState(() {
+                _currentView = 'settings';
+              });
+            },
+          ),
+          SizedBox(height: 16 * widget.scale),
+          // Simulation Dashboard Panel
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16 * widget.scale),
+            child: Container(
+              padding: EdgeInsets.all(16 * widget.scale),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16 * widget.scale),
+                border: Border.all(color: const Color(0x0A000000)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 8 * widget.scale,
+                    offset: Offset(0, 4 * widget.scale),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.dashboard_customize, color: const Color(0xFFDB3022), size: 18 * widget.scale),
+                      SizedBox(width: 8 * widget.scale),
+                      Text(
+                        'Database Sync Simulation',
+                        style: GoogleFonts.outfit(
+                          fontSize: 14 * widget.scale,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF222222),
+                        ),
+                      ),
+                      if (_statsLoading) ...[
+                        const Spacer(),
+                        SizedBox(
+                          width: 12 * widget.scale,
+                          height: 12 * widget.scale,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 1.5,
+                            color: Color(0xFFDB3022),
                           ),
                         ),
                       ],
+                    ],
+                  ),
+                  SizedBox(height: 6 * widget.scale),
+                  Text(
+                    'Tap buttons below to simulate actual database writes. Values will auto-increment and synchronize instantly!',
+                    style: GoogleFonts.inter(
+                      fontSize: 10.5 * widget.scale,
+                      color: const Color(0xFF9B9B9B),
                     ),
+                  ),
+                  SizedBox(height: 12 * widget.scale),
+                  Wrap(
+                    spacing: 8 * widget.scale,
+                    runSpacing: 8 * widget.scale,
+                    children: [
+                      _buildSimulationButton(
+                        label: '+ Order',
+                        icon: Icons.shopping_bag_outlined,
+                        onTap: () => _simulateAdd('order'),
+                        scale: widget.scale,
+                      ),
+                      _buildSimulationButton(
+                        label: '+ Address',
+                        icon: Icons.location_on_outlined,
+                        onTap: () => _simulateAdd('address'),
+                        scale: widget.scale,
+                      ),
+                      _buildSimulationButton(
+                        label: '+ Card',
+                        icon: Icons.credit_card_outlined,
+                        onTap: () => _simulateAdd('card'),
+                        scale: widget.scale,
+                      ),
+                      _buildSimulationButton(
+                        label: '+ Promo',
+                        icon: Icons.local_offer_outlined,
+                        onTap: () => _simulateAdd('coupon'),
+                        scale: widget.scale,
+                      ),
+                      _buildSimulationButton(
+                        label: '+ Review',
+                        icon: Icons.rate_review_outlined,
+                        onTap: () => _simulateAdd('review'),
+                        scale: widget.scale,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 24 * scale),
-            _infoItem(Icons.cloud_outlined, 'Provider', user?.provider.toUpperCase() ?? 'LOCAL', scale: scale),
-            SizedBox(height: 32 * scale),
-            SizedBox(
-              width: 327 * scale,
-              child: OutlinedButton.icon(
-                onPressed: () => _logout(context),
-                icon: Icon(Icons.logout_rounded, size: 18 * scale),
-                label: Text(
-                  'Đăng xuất',
-                  style: GoogleFonts.inter(fontSize: 14 * scale, fontWeight: FontWeight.w600),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFDB3022),
-                  side: const BorderSide(color: Color(0xFFDB3022), width: 1.5),
-                  padding: EdgeInsets.symmetric(vertical: 14 * scale),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16 * scale),
-                  ),
-                ),
+          ),
+          SizedBox(height: 24 * widget.scale),
+          _buildMenuItem(
+            title: 'Log out',
+            subtitle: 'Sign out of your account',
+            scale: widget.scale,
+            onTap: () => _logout(context),
+            isDestructive: true,
+          ),
+          SizedBox(height: 40 * widget.scale),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required String title,
+    required String subtitle,
+    required double scale,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0x0A000000),
+            width: 1,
+          ),
+        ),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 4 * scale),
+        title: Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 16 * scale,
+            fontWeight: FontWeight.w600,
+            color: isDestructive ? const Color(0xFFDB3022) : const Color(0xFF222222),
+          ),
+        ),
+        subtitle: Padding(
+          padding: EdgeInsets.only(top: 2 * scale),
+          child: Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              fontSize: 11 * scale,
+              color: const Color(0xFF9B9B9B),
+            ),
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          size: 20 * scale,
+          color: const Color(0xFF9B9B9B),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSimulationButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+    required double scale,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20 * scale),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 6 * scale),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF9F9F9),
+          border: Border.all(color: const Color(0xFFEEEEEE)),
+          borderRadius: BorderRadius.circular(20 * scale),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13 * scale, color: const Color(0xFF555555)),
+            SizedBox(width: 4 * scale),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11.5 * scale,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF555555),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAvatar(String? avatarUrl, String initials, double scale) {
-    if (avatarUrl != null && avatarUrl.isNotEmpty) {
-      return Container(
-        width: 72 * scale,
-        height: 72 * scale,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20 * scale),
-          border: Border.all(
-            color: const Color(0xFFDB3022).withOpacity(0.3),
-            width: 2,
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18 * scale),
-          child: Image.network(
-            avatarUrl,
-            width: 72 * scale,
-            height: 72 * scale,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _buildInitialsAvatar(initials, scale),
-            loadingBuilder: (_, child, progress) {
-              if (progress == null) return child;
-              return _buildInitialsAvatar(initials, scale);
-            },
-          ),
-        ),
-      );
-    }
-    return _buildInitialsAvatar(initials, scale);
-  }
-
-  Widget _buildInitialsAvatar(String initials, double scale) {
-    return Container(
-      width: 72 * scale,
-      height: 72 * scale,
-      decoration: BoxDecoration(
-        color: const Color(0xFFDB3022),
-        borderRadius: BorderRadius.circular(20 * scale),
-      ),
-      child: Center(
-        child: Text(
-          initials,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 24 * scale,
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getInitials(String? name) {
-    if (name?.isNotEmpty != true) return '?';
-    return name!
-        .split(' ')
-        .map((e) => e.isNotEmpty ? e[0].toUpperCase() : '')
-        .take(2)
-        .join();
-  }
-
-  Widget _infoItem(IconData icon, String label, String value, {required double scale}) {
-    return Container(
-      width: 327 * scale,
-      padding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 16 * scale),
-      decoration: BoxDecoration(
-        color: const Color(0xFFDB3022).withOpacity(0.06),
-        borderRadius: BorderRadius.circular(16 * scale),
-        border: Border.all(
-          color: const Color(0xFFDB3022).withOpacity(0.15),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40 * scale,
-            height: 40 * scale,
-            decoration: BoxDecoration(
-              color: const Color(0xFFDB3022),
-              borderRadius: BorderRadius.circular(12 * scale),
-            ),
-            child: Icon(icon, color: Colors.white, size: 20 * scale),
-          ),
-          SizedBox(width: 16 * scale),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF9B9B9B),
-                  fontSize: 13 * scale,
-                ),
-              ),
-              SizedBox(height: 2 * scale),
-              Text(
-                value,
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF222222),
-                  fontSize: 15 * scale,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -1481,6 +1996,7 @@ class _BigBanner extends StatefulWidget {
 class _BigBannerState extends State<_BigBanner> {
   int _activePage = 0;
   final _pageController = PageController();
+  Timer? _timer;
 
   final List<Map<String, String>> _bannerItems = [
     {
@@ -1492,6 +2008,35 @@ class _BigBannerState extends State<_BigBanner> {
       'title': 'Fashion\nsale',
     }
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_pageController.hasClients) {
+        int nextPage = _activePage + 1;
+        if (nextPage >= _bannerItems.length) {
+          nextPage = 0;
+        }
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1578,27 +2123,7 @@ class _BigBannerState extends State<_BigBanner> {
               ),
             ),
           ),
-          // Page indicators
-          Positioned(
-            right: 15 * widget.scale,
-            bottom: 24 * widget.scale,
-            child: Row(
-              children: List.generate(
-                _bannerItems.length,
-                (index) => Container(
-                  margin: EdgeInsets.only(left: 6 * widget.scale),
-                  width: 8 * widget.scale,
-                  height: 8 * widget.scale,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _activePage == index
-                        ? const Color(0xFFDB3022)
-                        : Colors.white.withOpacity(0.5),
-                  ),
-                ),
-              ),
-            ),
-          ),
+
         ],
       ),
     );
@@ -1740,7 +2265,7 @@ class _ProductCard extends StatelessWidget {
                     ? Image.network(
                         fullImageUrl,
                         fit: BoxFit.cover,
-                        alignment: Alignment.topCenter,
+                        alignment: Alignment.center,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: const Color(0xFFC4C4C4),
@@ -1964,21 +2489,10 @@ class _BottomBar extends StatelessWidget {
                 children: [
                   _tabItem(Icons.home, 'Home', index: 0),
                   _tabItem(Icons.shopping_cart_outlined, 'Shop', index: 1),
-                  _tabItem(Icons.shopping_bag_outlined, 'Bag', index: 2),
-                  _tabItem(Icons.favorite_border, 'Favorites', index: 3),
-                  _tabItem(Icons.person_outline, 'Profile', index: 4),
+                  _tabItem(selectedIndex == 2 ? Icons.shopping_bag : Icons.shopping_bag_outlined, 'Bag', index: 2),
+                  _tabItem(selectedIndex == 3 ? Icons.favorite : Icons.favorite_border, 'Favorites', index: 3),
+                  _tabItem(selectedIndex == 4 ? Icons.person : Icons.person_outline, 'Profile', index: 4),
                 ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 4 * scale, bottom: 2 * scale),
-              child: Container(
-                width: 134 * scale,
-                height: 5 * scale,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(100 * scale),
-                ),
               ),
             ),
           ],

@@ -20,6 +20,9 @@ class Product {
   final int? reviewCount;
   final String? note;
   final List<Tag> tags;
+  final List<String> sizes;
+  final List<String> colors;
+  final List<String> categoryIds;
 
   Product({
     required this.id,
@@ -41,6 +44,9 @@ class Product {
     this.reviewCount,
     this.note,
     required this.tags,
+    required this.sizes,
+    required this.colors,
+    required this.categoryIds,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -67,6 +73,9 @@ class Product {
               ?.map((item) => Tag.fromJson(item))
               .toList() ??
           [],
+      sizes: (json['sizes'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      colors: (json['colors'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      categoryIds: (json['categoryIds'] as List?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 
@@ -91,6 +100,9 @@ class Product {
       'reviewCount': reviewCount,
       'note': note,
       'tags': tags.map((t) => t.toJson()).toList(),
+      'sizes': sizes,
+      'colors': colors,
+      'categoryIds': categoryIds,
     };
   }
 }

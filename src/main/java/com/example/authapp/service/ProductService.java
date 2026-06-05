@@ -1,8 +1,13 @@
 package com.example.authapp.service;
 
+import com.example.authapp.dto.request.ProductCreateRequest;
 import com.example.authapp.dto.request.ProductUpdateRequest;
+import com.example.authapp.entity.Category;
+import com.example.authapp.entity.ProductCategory;
 import com.example.authapp.entity.Product;
 import com.example.authapp.entity.Tag;
+import com.example.authapp.repository.CategoryRepository;
+import com.example.authapp.repository.ProductCategoryRepository;
 import com.example.authapp.repository.ProductRepository;
 import com.example.authapp.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,25 +26,106 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final TagRepository tagRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductCategoryRepository productCategoryRepository;
+
+    private void populateCategoryIds(Product product) {
+        if (product != null && product.getId() != null) {
+            List<UUID> catIds = productCategoryRepository.findCategoryIdsByProductId(product.getId());
+            product.setCategoryIds(new HashSet<>(catIds));
+        }
+    }
+
+    private List<Product> populateCategoryIds(List<Product> products) {
+        if (products != null) {
+            for (Product p : products) {
+                populateCategoryIds(p);
+            }
+        }
+        return products;
+    }
 
     public List<Product> getSaleProducts() {
-        return productRepository.findSaleProducts();
+        return populateCategoryIds(productRepository.findSaleProducts());
     }
 
     public List<Product> getNewProducts() {
         List<Product> newProducts = productRepository.findByTagsTagNameIgnoreCase("NEW");
-        if (newProducts.isEmpty()) {
-            return productRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<Product> nonSaleNew = newProducts.stream()
+                .filter(p -> p.getComparePrice() == null || p.getComparePrice() <= p.getSalePrice())
+                .toList();
+        if (nonSaleNew.isEmpty()) {
+            List<Product> allProducts = productRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+            return populateCategoryIds(allProducts.stream()
+                    .filter(p -> p.getComparePrice() == null || p.getComparePrice() <= p.getSalePrice())
+                    .toList());
         }
-        return newProducts;
+        return populateCategoryIds(nonSaleNew);
     }
 
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        return populateCategoryIds(productRepository.findAll());
     }
 
     public List<Product> getProductsByTag(String tagName) {
-        return productRepository.findByTagsTagNameIgnoreCase(tagName);
+        return populateCategoryIds(productRepository.findByTagsTagNameIgnoreCase(tagName));
+    }
+
+    @Transactional
+    public Product createProduct(ProductCreateRequest request) {
+        // Validate duplicates
+        if (productRepository.findByProductName(request.getProductName()).isPresent()) {
+            throw new RuntimeException("Product with name '" + request.getProductName() + "' already exists!");
+        }
+
+        String slug = request.getProductName().toLowerCase()
+                .replaceAll("[^a-z0-9\\s]", "")
+                .replaceAll("\\s+", "-");
+
+        Product product = Product.builder()
+                .productName(request.getProductName())
+                .brandName(request.getBrandName())
+                .slug(slug)
+                .imageUrl(request.getImageUrl())
+                .salePrice(request.getSalePrice() != null ? request.getSalePrice() : 0.0)
+                .comparePrice(request.getComparePrice())
+                .quantity(request.getQuantity())
+                .shortDescription(request.getShortDescription() != null ? request.getShortDescription() : "")
+                .productDescription(request.getProductDescription() != null ? request.getProductDescription() : "")
+                .productType(request.getProductType() != null ? request.getProductType() : "simple")
+                .published(true)
+                .ratingAverage(5.0)
+                .reviewCount(0)
+                .sizes(request.getSizes() != null ? request.getSizes() : new HashSet<>())
+                .colors(request.getColors() != null ? request.getColors() : new HashSet<>())
+                .build();
+
+        if (request.getTags() != null) {
+            Set<Tag> tags = new HashSet<>();
+            for (String tagName : request.getTags()) {
+                Tag tag = tagRepository.findByTagName(tagName.toUpperCase())
+                        .orElseGet(() -> tagRepository.save(Tag.builder().tagName(tagName.toUpperCase()).build()));
+                tags.add(tag);
+            }
+            product.setTags(tags);
+        }
+
+        Product savedProduct = productRepository.save(product);
+
+        if (request.getCategoryIds() != null) {
+            for (String catIdStr : request.getCategoryIds()) {
+                UUID catId = UUID.fromString(catIdStr);
+                categoryRepository.findById(catId).ifPresent(category -> {
+                    productCategoryRepository.save(ProductCategory.builder()
+                            .product(savedProduct)
+                            .category(category)
+                            .build());
+                });
+            }
+        }
+
+        populateCategoryIds(savedProduct);
+        return savedProduct;
     }
 
     @Transactional
@@ -48,6 +134,11 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
 
         if (request.getProductName() != null) {
+            // Check if name changed and new name is already taken
+            if (!product.getProductName().equalsIgnoreCase(request.getProductName()) &&
+                    productRepository.findByProductName(request.getProductName()).isPresent()) {
+                throw new RuntimeException("Product with name '" + request.getProductName() + "' already exists!");
+            }
             product.setProductName(request.getProductName());
             product.setSlug(request.getProductName().toLowerCase()
                     .replaceAll("[^a-z0-9\\s]", "")
@@ -71,6 +162,20 @@ public class ProductService {
         if (request.getProductDescription() != null) {
             product.setProductDescription(request.getProductDescription());
         }
+        if (request.getQuantity() != null) {
+            product.setQuantity(request.getQuantity());
+        }
+        if (request.getProductType() != null) {
+            product.setProductType(request.getProductType());
+        }
+        if (request.getSizes() != null) {
+            product.getSizes().clear();
+            product.getSizes().addAll(request.getSizes());
+        }
+        if (request.getColors() != null) {
+            product.getColors().clear();
+            product.getColors().addAll(request.getColors());
+        }
 
         if (request.getTags() != null) {
             Set<Tag> updatedTags = new HashSet<>();
@@ -85,10 +190,35 @@ public class ProductService {
             product.setTags(updatedTags);
         }
 
-        return productRepository.save(product);
+        if (request.getCategoryIds() != null) {
+            productCategoryRepository.deleteByProductId(id);
+            productCategoryRepository.flush();
+
+            for (String catIdStr : request.getCategoryIds()) {
+                UUID catId = UUID.fromString(catIdStr);
+                categoryRepository.findById(catId).ifPresent(category -> {
+                    productCategoryRepository.save(ProductCategory.builder()
+                            .product(product)
+                            .category(category)
+                            .build());
+                });
+            }
+        }
+
+        Product saved = productRepository.save(product);
+        populateCategoryIds(saved);
+        return saved;
+    }
+
+    @Transactional
+    public void deleteProduct(UUID id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
+        productCategoryRepository.deleteByProductId(id);
+        productRepository.delete(product);
     }
 
     public List<Product> getProductsByCategory(UUID categoryId) {
-        return productRepository.findByCategoryId(categoryId);
+        return populateCategoryIds(productRepository.findByCategoryId(categoryId));
     }
 }

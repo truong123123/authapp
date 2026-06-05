@@ -96,4 +96,20 @@ public class Product {
     )
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "size")
+    @Builder.Default
+    private Set<String> sizes = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "product_colors", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "color")
+    @Builder.Default
+    private Set<String> colors = new HashSet<>();
+
+    @Transient
+    @Builder.Default
+    private Set<UUID> categoryIds = new HashSet<>();
 }

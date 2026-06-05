@@ -18,6 +18,9 @@ public class Coupon {
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private java.util.UUID id;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(nullable = false)
     private String code;
 

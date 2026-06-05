@@ -1,5 +1,6 @@
 package com.example.authapp.controller;
 
+import com.example.authapp.dto.request.ProductCreateRequest;
 import com.example.authapp.dto.request.ProductUpdateRequest;
 import com.example.authapp.entity.Product;
 import com.example.authapp.service.ProductService;
@@ -37,11 +38,22 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductsByTag(tagName));
     }
 
+    @PostMapping
+    public ResponseEntity<Product> createProduct(@RequestBody ProductCreateRequest request) {
+        return ResponseEntity.ok(productService.createProduct(request));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(
             @PathVariable UUID id, 
             @RequestBody ProductUpdateRequest request) {
         return ResponseEntity.ok(productService.updateProduct(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/category/{categoryId}")

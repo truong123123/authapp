@@ -28,7 +28,7 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
       'hasPhoto': true,
       'photos': [
         '${AppConstants.baseUrl}/images/z7896061230721_41a4a0c12a5100357c251e95b46bf9ed.jpg',
-        '${AppConstants.baseUrl}/images/z7896061244018_33d1f0a4cc39f928e69a0ff3725f7383.jpg',
+        '${AppConstants.baseUrl}/images/z7896061244018_33d1f0a4cc39f828e69a0ff3725f7383.jpg',
         '${AppConstants.baseUrl}/images/z7896061272915_47399beb55c4afe59a7ae310a066eefe.jpg',
       ],
     },
