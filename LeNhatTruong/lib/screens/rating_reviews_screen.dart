@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:le_nhat_truong/utils/constants.dart';
 
 class RatingReviewsScreen extends StatefulWidget {
@@ -26,7 +28,7 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
       'hasPhoto': true,
       'photos': [
         '${AppConstants.baseUrl}/images/z7896061230721_41a4a0c12a5100357c251e95b46bf9ed.jpg',
-        '${AppConstants.baseUrl}/images/z7896061244018_33d1f0a4cc39f828e69a0ff3725f7383.jpg',
+        '${AppConstants.baseUrl}/images/z7896061244018_33d1f0a4cc39f928e69a0ff3725f7383.jpg',
         '${AppConstants.baseUrl}/images/z7896061272915_47399beb55c4afe59a7ae310a066eefe.jpg',
       ],
     },
@@ -108,6 +110,35 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
       'photos': <String>[],
     }
   ];
+
+  Widget _buildImageWidget(String path, double width, double height) {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return Image.network(
+        path,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildErrorImage(width, height),
+      );
+    } else {
+      return Image.file(
+        File(path),
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildErrorImage(width, height),
+      );
+    }
+  }
+
+  Widget _buildErrorImage(double width, double height) {
+    return Container(
+      width: width,
+      height: height,
+      color: const Color(0xFFE0E0E0),
+      child: const Icon(Icons.image, color: Colors.grey),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -328,20 +359,7 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                         padding: EdgeInsets.only(right: 12 * scale),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8 * scale),
-                          child: Image.network(
-                            photoUrl,
-                            width: 104 * scale,
-                            height: 104 * scale,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: 104 * scale,
-                                height: 104 * scale,
-                                color: const Color(0xFFE0E0E0),
-                                child: const Icon(Icons.image, color: Colors.grey),
-                              );
-                            },
-                          ),
+                          child: _buildImageWidget(photoUrl, 104 * scale, 104 * scale),
                         ),
                       );
                     },
@@ -571,28 +589,73 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                       ),
                       SizedBox(height: 24 * scale),
 
-                      // Image picker row
+                      // Image picker row: Picked photos on left, Add your photos on right
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         physics: const BouncingScrollPhysics(),
                         child: Row(
                           children: [
+                            // 1. Render picked photos first (left)
+                            ...pickedPhotos.asMap().entries.map((entry) {
+                              final idx = entry.key;
+                              final photoUrl = entry.value;
+                              return Padding(
+                                padding: EdgeInsets.only(right: 12 * scale),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8 * scale),
+                                      child: _buildImageWidget(photoUrl, 104 * scale, 104 * scale),
+                                    ),
+                                    Positioned(
+                                      right: -4 * scale,
+                                      top: -4 * scale,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setBottomSheetState(() {
+                                            pickedPhotos.removeAt(idx);
+                                          });
+                                        },
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFDB3022),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          padding: EdgeInsets.all(2 * scale),
+                                          child: Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 14 * scale,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+
+                            // 2. Render "Add your photos" button at the end (right)
                             GestureDetector(
-                              onTap: () {
-                                final mockPhotos = [
-                                  '${AppConstants.baseUrl}/images/z7896061230721_41a4a0c12a5100357c251e95b46bf9ed.jpg',
-                                  '${AppConstants.baseUrl}/images/z7896061244018_33d1f0a4cc39f828e69a0ff3725f7383.jpg',
-                                  '${AppConstants.baseUrl}/images/z7896061272915_47399beb55c4afe59a7ae310a066eefe.jpg',
-                                ];
-                                if (pickedPhotos.length < mockPhotos.length) {
-                                  setBottomSheetState(() {
-                                    pickedPhotos.add(mockPhotos[pickedPhotos.length]);
-                                  });
-                                } else {
+                              onTap: () async {
+                                try {
+                                  final ImagePicker picker = ImagePicker();
+                                  final XFile? image = await picker.pickImage(
+                                    source: ImageSource.gallery,
+                                    imageQuality: 85,
+                                  );
+                                  if (image != null) {
+                                    setBottomSheetState(() {
+                                      pickedPhotos.add(image.path);
+                                    });
+                                  }
+                                } catch (e) {
+                                  if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Đã đạt giới hạn 3 ảnh mẫu cho review!'),
-                                      duration: Duration(seconds: 1),
+                                    SnackBar(
+                                      content: Text('Lỗi chọn ảnh: $e'),
+                                      backgroundColor: Colors.red,
                                     ),
                                   );
                                 }
@@ -640,51 +703,6 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                                 ),
                               ),
                             ),
-                            SizedBox(width: 12 * scale),
-                            ...pickedPhotos.asMap().entries.map((entry) {
-                              final idx = entry.key;
-                              final photoUrl = entry.value;
-                              return Padding(
-                                padding: EdgeInsets.only(right: 12 * scale),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(8 * scale),
-                                      child: Image.network(
-                                        photoUrl,
-                                        width: 104 * scale,
-                                        height: 104 * scale,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    Positioned(
-                                      right: -4 * scale,
-                                      top: -4 * scale,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          setBottomSheetState(() {
-                                            pickedPhotos.removeAt(idx);
-                                          });
-                                        },
-                                        child: Container(
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFFDB3022),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          padding: EdgeInsets.all(2 * scale),
-                                          child: Icon(
-                                            Icons.close,
-                                            color: Colors.white,
-                                            size: 14 * scale,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
                           ],
                         ),
                       ),
