@@ -27,16 +27,16 @@ public class AuthApplication {
             roleRepository.findByName("ROLE_ADMIN")
                     .orElseGet(() -> roleRepository.save(Role.builder().name("ROLE_ADMIN").build()));
 
-            if (!userRepository.existsByEmail("truongng1511")) {
+            if (!userRepository.existsByEmail("truongng1511@gmail.com")) {
                 User user = User.builder()
                         .name("truongng1511")
-                        .email("truongng1511")
+                        .email("truongng1511@gmail.com")
                         .password(passwordEncoder.encode("879779"))
                         .provider("local")
                         .roles(Collections.singleton(userRole))
                         .build();
                 userRepository.save(user);
-                System.out.println(">>> SEEDED USER: truongng1511 / 879779 <<<");
+                System.out.println(">>> SEEDED USER: truongng1511@gmail.com / 879779 <<<");
             }
         };
     }

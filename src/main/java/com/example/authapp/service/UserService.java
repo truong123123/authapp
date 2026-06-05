@@ -17,6 +17,7 @@ public class UserService {
     }
 
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (email == null) return Optional.empty();
+        return userRepository.findByEmail(email.trim().toLowerCase());
     }
 }

@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: postgresql
   application:
     name: authapp
 
@@ -30,21 +32,25 @@ spring:
       client:
         registration:
           google:
-            client-id: 570583732772-895ftopthdla005pbjpdsj0c3mo8m5n8.apps.googleusercontent.com
-            client-secret: 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
+            client-id: 866423970574-tj9c84ci6qvpd1scg3ch8g8fkoi5osn4.apps.googleusercontent.com
+            client-secret: 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
             scope:
               - email
               - profile
           facebook:
-            client-id: ${FACEBOOK_CLIENT_ID:facebook-client-id-placeholder}
-            client-secret: ${FACEBOOK_CLIENT_SECRET:facebook-client-secret-placeholder}
+            client-id: 1705017310534816
+            client-secret: ec785c94e880559154dc4b18b4d77e77
             scope:
               - email
               - public_profile
-            fields:
-              - id
-              - name
-              - email
+            provider: facebook
+            redirect-uri: http://localhost:8080/login/oauth2/code/facebook
+      provider:
+        facebook:
+          authorization-uri: https://www.facebook.com/v18.0/dialog/oauth
+          token-uri: https://graph.facebook.com/v18.0/oauth/access_token
+          user-info-uri: https://graph.facebook.com/v18.0/me?fields=id,name,email,picture.type(large)
+          user-name-attribute: id
 
 app:
   jwt:
@@ -52,7 +58,7 @@ app:
     expirationMs: 3600000
     refreshExpirationMs: 604800000
   oauth2:
-    authorizedRedirectUris: http://localhost:5000/oauth2/redirect,http://localhost:3000/oauth2/redirect,http://localhost:8080/swagger-ui.html
+    authorizedRedirectUris: http://localhost:8080/oauth2/redirect.html,http://lvh.me:8080/oauth2/redirect.html,authapp://oauth2/redirect
 
 server:
   port: 8080

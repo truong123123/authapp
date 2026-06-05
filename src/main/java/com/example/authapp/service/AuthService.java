@@ -44,7 +44,8 @@ public class AuthService {
 
     @Transactional
     public void register(RegisterRequest registerRequest) {
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+        String email = registerRequest.getEmail().trim().toLowerCase();
+        if (userRepository.existsByEmail(email)) {
             throw new AppException("Email is already in use");
         }
 
@@ -53,7 +54,7 @@ public class AuthService {
 
         User user = User.builder()
                 .name(registerRequest.getName())
-                .email(registerRequest.getEmail())
+                .email(email)
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .provider("local")
                 .roles(Collections.singleton(userRole))
@@ -64,8 +65,9 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest loginRequest) {
+        String email = loginRequest.getEmail().trim().toLowerCase();
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
+                new UsernamePasswordAuthenticationToken(email, loginRequest.getPassword())
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -75,6 +77,7 @@ public class AuthService {
 
         // Delete existing refresh token if exists
         refreshTokenRepository.deleteByUser(userDetails.getUser());
+        refreshTokenRepository.flush();
         
         RefreshToken refreshToken = createRefreshToken(userDetails.getUser());
 
@@ -126,6 +129,9 @@ public class AuthService {
 
     @Transactional
     public void logout(String email) {
-        userRepository.findByEmail(email).ifPresent(refreshTokenRepository::deleteByUser);
+        if (email != null) {
+            userRepository.findByEmail(email.trim().toLowerCase())
+                    .ifPresent(refreshTokenRepository::deleteByUser);
+        }
     }
 }

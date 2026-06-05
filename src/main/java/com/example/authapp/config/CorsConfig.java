@@ -20,7 +20,10 @@ public class CorsConfig {
                 "http://127.0.0.1:*",
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "http://localhost:8080"
+                "http://localhost:8080",
+                "http://172.16.6.205:*",
+                "http://192.168.*:*",
+                "https://*.trycloudflare.com"
         ));
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

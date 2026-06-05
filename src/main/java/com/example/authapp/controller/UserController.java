@@ -23,6 +23,7 @@ public class UserController {
                 .name(user.getName())
                 .email(user.getEmail())
                 .provider(user.getProvider())
+                .avatarUrl(user.getAvatarUrl())
                 .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
                 .build();
         return ResponseEntity.ok(response);
