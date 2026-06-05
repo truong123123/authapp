@@ -343,7 +343,15 @@ class _MainPageState extends State<MainPage> {
                         cat.categoryName,
                         imgUrl,
                         scale,
-                        () => _loadCategoryProducts(cat),
+                        () {
+                          if (cat.categoryName.toLowerCase() == 'clothes') {
+                            setState(() {
+                              _currentShopView = 'sub_clothes';
+                            });
+                          } else {
+                            _loadCategoryProducts(cat);
+                          }
+                        },
                       ),
                     );
                   }),
@@ -553,7 +561,12 @@ class _MainPageState extends State<MainPage> {
                     width: double.infinity,
                     height: 48 * scale,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        final clothesCats = _backendCategories.where((c) => c.categoryName.toLowerCase() == 'clothes');
+                        if (clothesCats.isNotEmpty) {
+                          _loadCategoryProducts(clothesCats.first);
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFDB3022),
                         shape: RoundedRectangleBorder(
