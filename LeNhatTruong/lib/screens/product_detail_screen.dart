@@ -4,6 +4,7 @@ import '../models/product.dart';
 import '../services/product_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/constants.dart';
+import 'rating_reviews_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final Product product;
@@ -328,25 +329,44 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           SizedBox(height: 8 * scale),
 
                           // Rating Stars
-                          Row(
-                            children: [
-                              ...List.generate(5, (i) {
-                                final isFilled = i < (widget.product.ratingAverage ?? 5.0).floor();
-                                return Icon(
-                                  Icons.star,
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RatingReviewsScreen(
+                                    productName: widget.product.productName,
+                                  ),
+                                ),
+                              );
+                            },
+                            behavior: HitTestBehavior.opaque,
+                            child: Row(
+                              children: [
+                                ...List.generate(5, (i) {
+                                  final isFilled = i < (widget.product.ratingAverage ?? 5.0).floor();
+                                  return Icon(
+                                    Icons.star,
+                                    size: 14 * scale,
+                                    color: isFilled ? const Color(0xFFFFBA49) : const Color(0xFF9B9B9B),
+                                  );
+                                }),
+                                SizedBox(width: 4 * scale),
+                                Text(
+                                  '(${widget.product.reviewCount ?? 10})',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11 * scale,
+                                    color: const Color(0xFF9B9B9B),
+                                  ),
+                                ),
+                                SizedBox(width: 4 * scale),
+                                Icon(
+                                  Icons.chevron_right,
                                   size: 14 * scale,
-                                  color: isFilled ? const Color(0xFFFFBA49) : const Color(0xFF9B9B9B),
-                                );
-                              }),
-                              SizedBox(width: 4 * scale),
-                              Text(
-                                '(${widget.product.reviewCount ?? 10})',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11 * scale,
                                   color: const Color(0xFF9B9B9B),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           SizedBox(height: 16 * scale),
 
