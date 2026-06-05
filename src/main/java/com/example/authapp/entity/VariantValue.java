@@ -18,9 +18,11 @@ public class VariantValue {
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private java.util.UUID id;
 
-    @Column(name = "variant_id", nullable = false)
-    private java.util.UUID variantId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_id", nullable = false)
+    private Variant variant;
 
-    @Column(name = "product_attribute_value_id", nullable = false)
-    private java.util.UUID productAttributeValueId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_attribute_value_id", nullable = false)
+    private ProductAttributeValue productAttributeValue;
 }

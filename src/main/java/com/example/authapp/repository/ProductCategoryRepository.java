@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductCategoryRepository extends JpaRepository<ProductCategory, java.util.UUID> {
+    boolean existsByProductAndCategory(com.example.authapp.entity.Product product, com.example.authapp.entity.Category category);
 }

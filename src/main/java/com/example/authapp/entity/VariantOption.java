@@ -24,8 +24,9 @@ public class VariantOption {
     @Column(name = "image_id")
     private java.util.UUID imageId;
 
-    @Column(name = "product_id", nullable = false)
-    private java.util.UUID productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(name = "sale_price", nullable = false)
     private Double salePrice;

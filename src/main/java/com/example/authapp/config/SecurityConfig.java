@@ -42,7 +42,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/products/**").permitAll()
+                .requestMatchers("/api/products/**", "/api/products").permitAll()
+                .requestMatchers("/api/categories/**", "/api/categories").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 // Static pages & assets - publicly accessible
                 .requestMatchers("/", "/index.html", "/login.html", "/signup.html").permitAll()

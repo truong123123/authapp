@@ -18,9 +18,11 @@ public class ProductAttribute {
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private java.util.UUID id;
 
-    @Column(name = "product_id", nullable = false)
-    private java.util.UUID productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    @Column(name = "attribute_id", nullable = false)
-    private java.util.UUID attributeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attribute_id", nullable = false)
+    private Attribute attribute;
 }

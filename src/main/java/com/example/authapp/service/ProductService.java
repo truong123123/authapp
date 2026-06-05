@@ -87,4 +87,8 @@ public class ProductService {
 
         return productRepository.save(product);
     }
+
+    public List<Product> getProductsByCategory(UUID categoryId) {
+        return productRepository.findByCategoryId(categoryId);
+    }
 }

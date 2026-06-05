@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 import '../models/product.dart';
+import '../models/category.dart';
 import '../services/product_service.dart';
 import '../utils/constants.dart';
 import 'login_screen.dart';
@@ -27,6 +28,12 @@ class _MainPageState extends State<MainPage> {
   bool _isTopsLoading = false;
   bool _isGridView = true;
 
+  List<CategoryModel> _backendCategories = [];
+  bool _isCategoriesLoading = false;
+  CategoryModel? _selectedCategory;
+  List<Product> _categoryProducts = [];
+  bool _isCategoryProductsLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -36,18 +43,23 @@ class _MainPageState extends State<MainPage> {
   Future<void> _loadProducts() async {
     setState(() {
       _isLoading = true;
+      _isCategoriesLoading = true;
     });
     try {
       final sales = await _productService.getSaleProducts();
       final news = await _productService.getNewProducts();
+      final cats = await _productService.getCategories();
       setState(() {
         _saleProducts = sales;
         _newProducts = news;
+        _backendCategories = cats;
         _isLoading = false;
+        _isCategoriesLoading = false;
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
+        _isCategoriesLoading = false;
       });
       print('>>> Error loading products in UI: $e');
     }
@@ -225,6 +237,9 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildCategoriesTab({required double scale}) {
+    if (_currentShopView == 'category_products' && _selectedCategory != null) {
+      return _buildCategoryProductsView(scale: scale);
+    }
     if (_currentShopView == 'sub_clothes') {
       return _buildSubClothesView(scale: scale);
     }
@@ -232,24 +247,16 @@ class _MainPageState extends State<MainPage> {
       return _buildTopsView(scale: scale);
     }
 
-    final List<Map<String, String>> categories = [
-      {
-        'title': 'New',
-        'image': '${AppConstants.baseUrl}/images/cat_new.jpg',
-      },
-      {
-        'title': 'Clothes',
-        'image': '${AppConstants.baseUrl}/images/cat_clothes.jpg',
-      },
-      {
-        'title': 'Shoes',
-        'image': '${AppConstants.baseUrl}/images/cat_shoes.jpg',
-      },
-      {
-        'title': 'Accesories',
-        'image': '${AppConstants.baseUrl}/images/cat_accessories.jpg',
-      },
-    ];
+    if (_isCategoriesLoading) {
+      return Container(
+        color: const Color(0xFFF9F9F9),
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFDB3022),
+          ),
+        ),
+      );
+    }
 
     return Container(
       color: const Color(0xFFF9F9F9),
@@ -313,11 +320,33 @@ class _MainPageState extends State<MainPage> {
                   // Summer Sales banner
                   _buildSummerSaleBanner(scale),
                   SizedBox(height: 16 * scale),
-                  // Categories list
-                  ...categories.map((cat) => Padding(
-                        padding: EdgeInsets.only(bottom: 16 * scale),
-                        child: _buildCategoryCard(cat['title']!, cat['image']!, scale),
-                      )),
+
+                  // Empty state check
+                  if (_backendCategories.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40 * scale),
+                      child: Text(
+                        'Không có danh mục nào',
+                        style: GoogleFonts.inter(fontSize: 14 * scale, color: Colors.grey),
+                      ),
+                    ),
+
+                  // Categories list dynamically loaded
+                  ..._backendCategories.map((cat) {
+                    final String fallbackImg = '${AppConstants.baseUrl}/images/cat_${cat.categoryName.toLowerCase().replaceAll(" ", "_")}.jpg';
+                    final String imgUrl = (cat.image != null && cat.image!.isNotEmpty)
+                        ? (cat.image!.startsWith('http') ? cat.image! : '${AppConstants.baseUrl}${cat.image}')
+                        : fallbackImg;
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 16 * scale),
+                      child: _buildCategoryCard(
+                        cat.categoryName,
+                        imgUrl,
+                        scale,
+                        () => _loadCategoryProducts(cat),
+                      ),
+                    );
+                  }),
                   SizedBox(height: 24 * scale),
                 ],
               ),
@@ -403,15 +432,9 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _buildCategoryCard(String title, String imageUrl, double scale) {
+  Widget _buildCategoryCard(String title, String imageUrl, double scale, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {
-        if (title.toLowerCase() == 'clothes') {
-          setState(() {
-            _currentShopView = 'sub_clothes';
-          });
-        }
-      },
+      onTap: onTap,
       child: Container(
         height: 100 * scale,
         decoration: BoxDecoration(
@@ -599,6 +622,212 @@ class _MainPageState extends State<MainPage> {
             _loadTopsProducts();
           }
         },
+      ),
+    );
+  }
+
+  Future<void> _loadCategoryProducts(CategoryModel category) async {
+    setState(() {
+      _selectedCategory = category;
+      _isCategoryProductsLoading = true;
+      _currentShopView = 'category_products';
+    });
+    try {
+      final products = await _productService.getProductsByCategory(category.id);
+      setState(() {
+        _categoryProducts = products;
+        _isCategoryProductsLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isCategoryProductsLoading = false;
+      });
+      print('>>> Error loading products for category ${category.categoryName}: $e');
+    }
+  }
+
+  Widget _buildCategoryProductsView({required double scale}) {
+    final List<String> tags = ['T-shirts', 'Crop tops', 'Sleeveless', 'Shirts'];
+
+    return Container(
+      color: const Color(0xFFF9F9F9),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Custom AppBar
+          Container(
+            color: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 8 * scale),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 18 * scale),
+                  onPressed: () {
+                    setState(() {
+                      _currentShopView = 'main'; // Go back to main categories
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.search, color: const Color(0xFF222222), size: 24 * scale),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+          
+          // Large Title
+          Padding(
+            padding: EdgeInsets.fromLTRB(16 * scale, 12 * scale, 16 * scale, 12 * scale),
+            child: Text(
+              _selectedCategory?.categoryName ?? 'Products',
+              style: GoogleFonts.outfit(
+                fontSize: 34 * scale,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF222222),
+              ),
+            ),
+          ),
+
+          // Horizontal Tags/Chips
+          SizedBox(
+            height: 36 * scale,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(left: 16 * scale),
+              itemCount: tags.length,
+              itemBuilder: (context, index) {
+                final tag = tags[index];
+                return Padding(
+                  padding: EdgeInsets.only(right: 8 * scale),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF222222),
+                      borderRadius: BorderRadius.circular(29 * scale),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16 * scale),
+                    alignment: Alignment.center,
+                    child: Text(
+                      tag,
+                      style: GoogleFonts.inter(
+                        fontSize: 14 * scale,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(height: 12 * scale),
+
+          // Filters and Sorting Bar
+          Container(
+            color: const Color(0xFFF9F9F9),
+            padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Filters
+                Row(
+                  children: [
+                    Icon(Icons.filter_list, size: 18 * scale, color: const Color(0xFF222222)),
+                    SizedBox(width: 6 * scale),
+                    Text(
+                      'Filters',
+                      style: GoogleFonts.inter(
+                        fontSize: 11 * scale,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF222222),
+                      ),
+                    ),
+                  ],
+                ),
+                // Sorting
+                Row(
+                  children: [
+                    Icon(Icons.swap_vert, size: 18 * scale, color: const Color(0xFF222222)),
+                    SizedBox(width: 6 * scale),
+                    Text(
+                      'Price: lowest to high',
+                      style: GoogleFonts.inter(
+                        fontSize: 11 * scale,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF222222),
+                      ),
+                    ),
+                  ],
+                ),
+                // Layout view switch icon
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isGridView = !_isGridView;
+                    });
+                  },
+                  child: Icon(
+                    _isGridView ? Icons.view_list : Icons.view_module,
+                    size: 20 * scale,
+                    color: const Color(0xFF222222),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8 * scale),
+
+          // Product list
+          Expanded(
+            child: _isCategoryProductsLoading
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFDB3022),
+                    ),
+                  )
+                : _categoryProducts.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Không tìm thấy sản phẩm nào',
+                          style: GoogleFonts.inter(fontSize: 14 * scale, color: Colors.grey),
+                        ),
+                      )
+                    : _isGridView
+                        ? GridView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 16 * scale,
+                              mainAxisSpacing: 26 * scale,
+                              childAspectRatio: 0.59,
+                            ),
+                            itemCount: _categoryProducts.length,
+                            itemBuilder: (context, index) {
+                              return LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return _ProductCard(
+                                    width: constraints.maxWidth,
+                                    height: constraints.maxHeight,
+                                    scale: scale,
+                                    product: _categoryProducts[index],
+                                  );
+                                },
+                              );
+                            },
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 16 * scale),
+                            itemCount: _categoryProducts.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 24 * scale),
+                                child: _buildTopsProductRowCard(_categoryProducts[index], scale),
+                              );
+                            },
+                          ),
+          ),
+        ],
       ),
     );
   }

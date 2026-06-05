@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/product.dart';
+import '../models/category.dart';
 import '../utils/constants.dart';
 
 class ProductService {
@@ -57,6 +58,44 @@ class ProductService {
       }
     } catch (e) {
       print('>>> Error getting products by tag $tagName: $e');
+      return [];
+    }
+  }
+
+  Future<List<CategoryModel>> getCategories() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConstants.baseUrl}/api/categories'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
+        return body.map((item) => CategoryModel.fromJson(item)).toList();
+      } else {
+        throw Exception('Không thể lấy danh sách danh mục');
+      }
+    } catch (e) {
+      print('>>> Error getting categories: $e');
+      return [];
+    }
+  }
+
+  Future<List<Product>> getProductsByCategory(String categoryId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConstants.baseUrl}/api/products/category/$categoryId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
+        return body.map((item) => Product.fromJson(item)).toList();
+      } else {
+        throw Exception('Không thể lấy danh sách sản phẩm theo danh mục');
+      }
+    } catch (e) {
+      print('>>> Error getting products by category $categoryId: $e');
       return [];
     }
   }

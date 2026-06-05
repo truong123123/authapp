@@ -21,9 +21,11 @@ public class Variant {
     @Column(name = "variant_option", nullable = false)
     private String variantOption;
 
-    @Column(name = "product_id", nullable = false)
-    private java.util.UUID productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    @Column(name = "variant_option_id", nullable = false)
-    private java.util.UUID variantOptionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_option_id", nullable = false)
+    private VariantOption variantOptionEntity;
 }

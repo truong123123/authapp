@@ -1,7 +1,11 @@
 package com.example.authapp.config;
 
+import com.example.authapp.entity.Category;
+import com.example.authapp.entity.ProductCategory;
 import com.example.authapp.entity.Product;
 import com.example.authapp.entity.Tag;
+import com.example.authapp.repository.CategoryRepository;
+import com.example.authapp.repository.ProductCategoryRepository;
 import com.example.authapp.repository.ProductRepository;
 import com.example.authapp.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,8 @@ public class DataInitializer implements CommandLineRunner {
 
         private final ProductRepository productRepository;
         private final TagRepository tagRepository;
+        private final CategoryRepository categoryRepository;
+        private final ProductCategoryRepository productCategoryRepository;
 
         @Override
         public void run(String... args) throws Exception {
@@ -32,6 +38,34 @@ public class DataInitializer implements CommandLineRunner {
 
                 Tag tagTops = tagRepository.findByTagName("TOPS")
                                 .orElseGet(() -> tagRepository.save(Tag.builder().tagName("TOPS").build()));
+
+                // Ensure categories exist
+                Category catDresses = categoryRepository.findByCategoryNameIgnoreCase("Dresses")
+                                .orElseGet(() -> categoryRepository.save(Category.builder()
+                                                .categoryName("Dresses")
+                                                .categoryDescription("Đầm váy thời trang")
+                                                .active(true)
+                                                .createdAt(java.time.OffsetDateTime.now())
+                                                .updatedAt(java.time.OffsetDateTime.now())
+                                                .build()));
+
+                Category catTshirts = categoryRepository.findByCategoryNameIgnoreCase("T-Shirts")
+                                .orElseGet(() -> categoryRepository.save(Category.builder()
+                                                .categoryName("T-Shirts")
+                                                .categoryDescription("Áo thun thời trang năng động")
+                                                .active(true)
+                                                .createdAt(java.time.OffsetDateTime.now())
+                                                .updatedAt(java.time.OffsetDateTime.now())
+                                                .build()));
+
+                Category catTops = categoryRepository.findByCategoryNameIgnoreCase("Tops")
+                                .orElseGet(() -> categoryRepository.save(Category.builder()
+                                                .categoryName("Tops")
+                                                .categoryDescription("Áo sơ mi và áo blouse")
+                                                .active(true)
+                                                .createdAt(java.time.OffsetDateTime.now())
+                                                .updatedAt(java.time.OffsetDateTime.now())
+                                                .build()));
 
                 // Initialize basic products if empty
                 if (productRepository.count() == 0) {
@@ -90,9 +124,13 @@ public class DataInitializer implements CommandLineRunner {
                                         .tags(new HashSet<>(Set.of(tagNew)))
                                         .build();
 
-                        productRepository.save(p1);
-                        productRepository.save(p2);
-                        productRepository.save(p3);
+                        p1 = productRepository.save(p1);
+                        p2 = productRepository.save(p2);
+                        p3 = productRepository.save(p3);
+
+                        linkProductToCategory(p1, catDresses);
+                        linkProductToCategory(p2, catDresses);
+                        linkProductToCategory(p3, catTshirts);
                 }
 
                 // Check and initialize TOPS products if they don't exist
@@ -174,11 +212,34 @@ public class DataInitializer implements CommandLineRunner {
                                         .tags(new HashSet<>(Set.of(tagTops, tagSale)))
                                         .build();
 
-                        productRepository.save(p4);
-                        productRepository.save(p5);
-                        productRepository.save(p6);
-                        productRepository.save(p7);
+                        p4 = productRepository.save(p4);
+                        p5 = productRepository.save(p5);
+                        p6 = productRepository.save(p6);
+                        p7 = productRepository.save(p7);
+
+                        linkProductToCategory(p4, catTshirts);
+                        linkProductToCategory(p5, catTops);
+                        linkProductToCategory(p6, catTops);
+                        linkProductToCategory(p7, catTops);
                         log.info("TOPS product data initialized successfully.");
+                }
+
+                // Associate existing products with categories if they exist
+                productRepository.findByProductName("Evening Dress").ifPresent(p -> linkProductToCategory(p, catDresses));
+                productRepository.findByProductName("Sport Dress").ifPresent(p -> linkProductToCategory(p, catDresses));
+                productRepository.findByProductName("Oversize T-Shirt").ifPresent(p -> linkProductToCategory(p, catTshirts));
+                productRepository.findByProductName("T-Shirt SPANISH").ifPresent(p -> linkProductToCategory(p, catTshirts));
+                productRepository.findByProductName("Blouse").ifPresent(p -> linkProductToCategory(p, catTops));
+                productRepository.findByProductName("Shirt").ifPresent(p -> linkProductToCategory(p, catTops));
+                productRepository.findByProductName("Light blouse").ifPresent(p -> linkProductToCategory(p, catTops));
+        }
+
+        private void linkProductToCategory(Product product, Category category) {
+                if (!productCategoryRepository.existsByProductAndCategory(product, category)) {
+                        productCategoryRepository.save(ProductCategory.builder()
+                                        .product(product)
+                                        .category(category)
+                                        .build());
                 }
         }
 }

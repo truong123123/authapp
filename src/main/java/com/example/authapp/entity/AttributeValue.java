@@ -18,8 +18,9 @@ public class AttributeValue {
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private java.util.UUID id;
 
-    @Column(name = "attribute_id", nullable = false)
-    private java.util.UUID attributeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attribute_id", nullable = false)
+    private Attribute attribute;
 
     @Column(name = "attribute_value", nullable = false)
     private String attributeValue;
