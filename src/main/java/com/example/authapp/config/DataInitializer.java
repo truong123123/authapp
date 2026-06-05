@@ -40,28 +40,41 @@ public class DataInitializer implements CommandLineRunner {
                                 .orElseGet(() -> tagRepository.save(Tag.builder().tagName("TOPS").build()));
 
                 // Ensure categories exist
-                Category catDresses = categoryRepository.findByCategoryNameIgnoreCase("Dresses")
+                Category catNew = categoryRepository.findByCategoryNameIgnoreCase("New")
                                 .orElseGet(() -> categoryRepository.save(Category.builder()
-                                                .categoryName("Dresses")
-                                                .categoryDescription("Đầm váy thời trang")
+                                                .categoryName("New")
+                                                .categoryDescription("New arrivals")
+                                                .image("/images/cat_new.jpg")
                                                 .active(true)
                                                 .createdAt(java.time.OffsetDateTime.now())
                                                 .updatedAt(java.time.OffsetDateTime.now())
                                                 .build()));
 
-                Category catTshirts = categoryRepository.findByCategoryNameIgnoreCase("T-Shirts")
+                Category catClothes = categoryRepository.findByCategoryNameIgnoreCase("Clothes")
                                 .orElseGet(() -> categoryRepository.save(Category.builder()
-                                                .categoryName("T-Shirts")
-                                                .categoryDescription("Áo thun thời trang năng động")
+                                                .categoryName("Clothes")
+                                                .categoryDescription("Clothes collection")
+                                                .image("/images/cat_clothes.jpg")
                                                 .active(true)
                                                 .createdAt(java.time.OffsetDateTime.now())
                                                 .updatedAt(java.time.OffsetDateTime.now())
                                                 .build()));
 
-                Category catTops = categoryRepository.findByCategoryNameIgnoreCase("Tops")
+                Category catShoes = categoryRepository.findByCategoryNameIgnoreCase("Shoes")
                                 .orElseGet(() -> categoryRepository.save(Category.builder()
-                                                .categoryName("Tops")
-                                                .categoryDescription("Áo sơ mi và áo blouse")
+                                                .categoryName("Shoes")
+                                                .categoryDescription("Shoes collection")
+                                                .image("/images/cat_shoes.jpg")
+                                                .active(true)
+                                                .createdAt(java.time.OffsetDateTime.now())
+                                                .updatedAt(java.time.OffsetDateTime.now())
+                                                .build()));
+
+                Category catAccessories = categoryRepository.findByCategoryNameIgnoreCase("Accessories")
+                                .orElseGet(() -> categoryRepository.save(Category.builder()
+                                                .categoryName("Accessories")
+                                                .categoryDescription("Accessories collection")
+                                                .image("/images/cat_accessories.jpg")
                                                 .active(true)
                                                 .createdAt(java.time.OffsetDateTime.now())
                                                 .updatedAt(java.time.OffsetDateTime.now())
@@ -128,9 +141,9 @@ public class DataInitializer implements CommandLineRunner {
                         p2 = productRepository.save(p2);
                         p3 = productRepository.save(p3);
 
-                        linkProductToCategory(p1, catDresses);
-                        linkProductToCategory(p2, catDresses);
-                        linkProductToCategory(p3, catTshirts);
+                        linkProductToCategory(p1, catClothes);
+                        linkProductToCategory(p2, catClothes);
+                        linkProductToCategory(p3, catNew);
                 }
 
                 // Check and initialize TOPS products if they don't exist
@@ -217,21 +230,21 @@ public class DataInitializer implements CommandLineRunner {
                         p6 = productRepository.save(p6);
                         p7 = productRepository.save(p7);
 
-                        linkProductToCategory(p4, catTshirts);
-                        linkProductToCategory(p5, catTops);
-                        linkProductToCategory(p6, catTops);
-                        linkProductToCategory(p7, catTops);
+                        linkProductToCategory(p4, catNew);
+                        linkProductToCategory(p5, catClothes);
+                        linkProductToCategory(p6, catClothes);
+                        linkProductToCategory(p7, catClothes);
                         log.info("TOPS product data initialized successfully.");
                 }
 
                 // Associate existing products with categories if they exist
-                productRepository.findByProductName("Evening Dress").ifPresent(p -> linkProductToCategory(p, catDresses));
-                productRepository.findByProductName("Sport Dress").ifPresent(p -> linkProductToCategory(p, catDresses));
-                productRepository.findByProductName("Oversize T-Shirt").ifPresent(p -> linkProductToCategory(p, catTshirts));
-                productRepository.findByProductName("T-Shirt SPANISH").ifPresent(p -> linkProductToCategory(p, catTshirts));
-                productRepository.findByProductName("Blouse").ifPresent(p -> linkProductToCategory(p, catTops));
-                productRepository.findByProductName("Shirt").ifPresent(p -> linkProductToCategory(p, catTops));
-                productRepository.findByProductName("Light blouse").ifPresent(p -> linkProductToCategory(p, catTops));
+                productRepository.findByProductName("Evening Dress").ifPresent(p -> linkProductToCategory(p, catClothes));
+                productRepository.findByProductName("Sport Dress").ifPresent(p -> linkProductToCategory(p, catClothes));
+                productRepository.findByProductName("Oversize T-Shirt").ifPresent(p -> linkProductToCategory(p, catNew));
+                productRepository.findByProductName("T-Shirt SPANISH").ifPresent(p -> linkProductToCategory(p, catNew));
+                productRepository.findByProductName("Blouse").ifPresent(p -> linkProductToCategory(p, catClothes));
+                productRepository.findByProductName("Shirt").ifPresent(p -> linkProductToCategory(p, catClothes));
+                productRepository.findByProductName("Light blouse").ifPresent(p -> linkProductToCategory(p, catClothes));
         }
 
         private void linkProductToCategory(Product product, Category category) {
