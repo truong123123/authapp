@@ -39,6 +39,25 @@ public class DataInitializer implements CommandLineRunner {
                 Tag tagTops = tagRepository.findByTagName("TOPS")
                                 .orElseGet(() -> tagRepository.save(Tag.builder().tagName("TOPS").build()));
 
+                // Clean up old categories (Dresses, T-Shirts, Tops) and their links to keep database clean
+                List<Category> allCategories = categoryRepository.findAll();
+                boolean cleaned = false;
+                for (Category cat : allCategories) {
+                        String name = cat.getCategoryName().toLowerCase();
+                        if (!name.equals("new") && !name.equals("clothes") && !name.equals("shoes") && !name.equals("accessories")) {
+                                List<ProductCategory> associations = productCategoryRepository.findAll().stream()
+                                                .filter(pc -> pc.getCategory().getId().equals(cat.getId()))
+                                                .toList();
+                                productCategoryRepository.deleteAll(associations);
+                                categoryRepository.delete(cat);
+                                cleaned = true;
+                        }
+                }
+                if (cleaned) {
+                        productCategoryRepository.flush();
+                        categoryRepository.flush();
+                }
+
                 // Ensure categories exist
                 Category catNew = categoryRepository.findByCategoryNameIgnoreCase("New")
                                 .orElseGet(() -> categoryRepository.save(Category.builder()
