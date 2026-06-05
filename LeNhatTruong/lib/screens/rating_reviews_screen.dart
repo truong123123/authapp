@@ -25,9 +25,9 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
       'helpful': true,
       'hasPhoto': true,
       'photos': [
-        '${AppConstants.baseUrl}/images/z7888714325820_8a8c41d36859f73468b1bc4c0ecc6d25.jpg',
-        '${AppConstants.baseUrl}/images/z7888714419714_1830fc96c115da3bccaa1d204524bb38.jpg',
-        '${AppConstants.baseUrl}/images/z7888714471752_253945ad80a37b7a4fcfe0dcb709b3ae.jpg',
+        '${AppConstants.baseUrl}/images/z7896061230721_41a4a0c12a5100357c251e95b46bf9ed.jpg',
+        '${AppConstants.baseUrl}/images/z7896061244018_33d1f0a4cc39f828e69a0ff3725f7383.jpg',
+        '${AppConstants.baseUrl}/images/z7896061272915_47399beb55c4afe59a7ae310a066eefe.jpg',
       ],
     },
     {
@@ -580,9 +580,9 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                             GestureDetector(
                               onTap: () {
                                 final mockPhotos = [
-                                  '${AppConstants.baseUrl}/images/z7888714325820_8a8c41d36859f73468b1bc4c0ecc6d25.jpg',
-                                  '${AppConstants.baseUrl}/images/z7888714419714_1830fc96c115da3bccaa1d204524bb38.jpg',
-                                  '${AppConstants.baseUrl}/images/z7888714471752_253945ad80a37b7a4fcfe0dcb709b3ae.jpg',
+                                  '${AppConstants.baseUrl}/images/z7896061230721_41a4a0c12a5100357c251e95b46bf9ed.jpg',
+                                  '${AppConstants.baseUrl}/images/z7896061244018_33d1f0a4cc39f828e69a0ff3725f7383.jpg',
+                                  '${AppConstants.baseUrl}/images/z7896061272915_47399beb55c4afe59a7ae310a066eefe.jpg',
                                 ];
                                 if (pickedPhotos.length < mockPhotos.length) {
                                   setBottomSheetState(() {
