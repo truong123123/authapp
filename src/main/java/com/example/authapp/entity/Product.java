@@ -60,10 +60,12 @@ public class Product {
     @Column(name = "product_type", length = 64)
     private String productType;
 
-    private boolean published;
+    @Builder.Default
+    private boolean published = false;
 
     @Column(name = "disable_out_of_stock")
-    private boolean disableOutOfStock;
+    @Builder.Default
+    private boolean disableOutOfStock = true;
 
     @Column(name = "rating_average")
     private Double ratingAverage;
@@ -82,11 +84,13 @@ public class Product {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    @Column(name = "created_by")
-    private UUID createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private StaffAccount createdBy;
 
-    @Column(name = "updated_by")
-    private UUID updatedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private StaffAccount updatedBy;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -109,7 +113,28 @@ public class Product {
     @Builder.Default
     private Set<String> colors = new HashSet<>();
 
-    @Transient
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "product_categories",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
     @Builder.Default
-    private Set<UUID> categoryIds = new HashSet<>();
+    private Set<Category> categories = new HashSet<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Builder.Default
+    private Set<Gallery> gallery = new HashSet<>();
+
+    @Transient
+    private Set<UUID> categoryIds;
+
+    public Set<UUID> getCategoryIds() {
+        if (categories == null) return new HashSet<>();
+        return categories.stream().map(Category::getId).collect(java.util.stream.Collectors.toSet());
+    }
+
+    public void setCategoryIds(Set<UUID> categoryIds) {
+        this.categoryIds = categoryIds;
+    }
 }

@@ -5,6 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "slideshows")
@@ -16,44 +21,52 @@ public class Slideshow {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
+    @Column(length = 80)
     private String title;
 
-    @Column(name = "destination_url")
+    @Column(name = "destination_url", columnDefinition = "TEXT")
     private String destinationUrl;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String image;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String placeholder;
 
+    @Column(length = 160)
     private String description;
 
-    @Column(name = "btn_label")
+    @Column(name = "btn_label", length = 50)
     private String btnLabel;
 
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
 
-    private Boolean published;
+    @Builder.Default
+    private Boolean published = false;
 
     @Column(nullable = false)
-    private Integer clicks;
+    @Builder.Default
+    private Integer clicks = 0;
 
     @Column(columnDefinition = "jsonb")
     private String styles;
 
-    @Column(name = "created_at", nullable = false)
-    private java.time.OffsetDateTime createdAt;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private java.time.OffsetDateTime updatedAt;
+    private OffsetDateTime updatedAt;
 
-    @Column(name = "created_by")
-    private java.util.UUID createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private StaffAccount createdBy;
 
-    @Column(name = "updated_by")
-    private java.util.UUID updatedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private StaffAccount updatedBy;
 }

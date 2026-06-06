@@ -29,7 +29,8 @@ class OrderSuccessScreen extends StatelessWidget {
             Image.asset(
               'assets/images/success_bg.png',
               fit: BoxFit.cover,
-              alignment: Alignment.bottomCenter, // Keeps the tablet at the bottom visible
+              alignment: Alignment
+                  .bottomCenter, // Keeps the tablet at the bottom visible
             ),
 
             // Foreground content
@@ -37,7 +38,9 @@ class OrderSuccessScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: size.height * 0.12), // Align text section higher to match mockup
+                  SizedBox(
+                      height: size.height *
+                          0.12), // Align text section higher to match mockup
 
                   // "Success!" Title
                   Text(
@@ -256,7 +259,8 @@ class ShoppingBagsIllustration extends StatelessWidget {
               width: 8 * scale,
               height: 8 * scale,
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF222222), width: 1.5 * scale),
+                border: Border.all(
+                    color: const Color(0xFF222222), width: 1.5 * scale),
                 shape: BoxShape.circle,
               ),
             ),
@@ -269,7 +273,8 @@ class ShoppingBagsIllustration extends StatelessWidget {
               width: 6 * scale,
               height: 6 * scale,
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF222222), width: 1.2 * scale),
+                border: Border.all(
+                    color: const Color(0xFF222222), width: 1.2 * scale),
                 shape: BoxShape.circle,
               ),
             ),
@@ -292,7 +297,8 @@ class ShoppingBagsIllustration extends StatelessWidget {
                       width: 30 * scale,
                       height: 24 * scale,
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF222222), width: 2.2 * scale),
+                        border: Border.all(
+                            color: const Color(0xFF222222), width: 2.2 * scale),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(15 * scale),
                           topRight: Radius.circular(15 * scale),
@@ -338,7 +344,8 @@ class ShoppingBagsIllustration extends StatelessWidget {
                       width: 36 * scale,
                       height: 28 * scale,
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFE08E79), width: 2.2 * scale),
+                        border: Border.all(
+                            color: const Color(0xFFE08E79), width: 2.2 * scale),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(18 * scale),
                           topRight: Radius.circular(18 * scale),

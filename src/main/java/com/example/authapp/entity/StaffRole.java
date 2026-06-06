@@ -6,8 +6,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
+// Maps to: roles table (staff roles, separate from app_user_roles)
 @Entity
-@Table(name = "staff_roles")
+@Table(name = "roles")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,13 +19,11 @@ public class StaffRole {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
     @Column(name = "role_name", nullable = false)
     private String roleName;
 
+    @Column(columnDefinition = "TEXT")
     private String privileges;
-
-    @Column(nullable = false)
-    private String name;
 }

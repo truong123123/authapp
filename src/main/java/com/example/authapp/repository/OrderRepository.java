@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String> {
-    long countByUserId(Long userId);
-    java.util.List<Order> findByUserId(Long userId);
+    long countByCustomerUserId(Long userId);
+    java.util.List<Order> findByCustomerUserId(Long userId);
 }

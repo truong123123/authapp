@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "customer_addresses")
 @Data
@@ -16,24 +18,22 @@ public class CustomerAddress {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
-    @Column(name = "customer_id")
-    private java.util.UUID customerId;
-
-    @Column(name = "address_line1", nullable = false)
+    @Column(name = "address_line1", nullable = false, columnDefinition = "TEXT")
     private String addressLine1;
 
-    @Column(name = "address_line2")
+    @Column(name = "address_line2", columnDefinition = "TEXT")
     private String addressLine2;
 
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-    @Column(name = "dial_code", nullable = false)
+    @Column(name = "dial_code", nullable = false, length = 100)
     private String dialCode;
 
     @Column(nullable = false)

@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/products/**", "/api/products").permitAll()
                 .requestMatchers("/api/categories/**", "/api/categories").permitAll()
+                .requestMatchers("/api/reviews/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 // Static pages & assets - publicly accessible
                 .requestMatchers("/", "/index.html", "/login.html", "/signup.html").permitAll()

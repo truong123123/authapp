@@ -30,7 +30,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider(create: (_) => AuthService()),
-        ChangeNotifierProvider(create: (ctx) => AuthProvider(authService: ctx.read())),
+        ChangeNotifierProvider(
+            create: (ctx) => AuthProvider(authService: ctx.read())),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
@@ -39,12 +40,14 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         onGenerateRoute: (settings) {
-          if (settings.name != null && settings.name!.startsWith('/oauth2/redirect')) {
+          if (settings.name != null &&
+              settings.name!.startsWith('/oauth2/redirect')) {
             final uri = Uri.parse(settings.name!);
             final token = uri.queryParameters['token'];
             final refreshToken = uri.queryParameters['refreshToken'];
             return MaterialPageRoute(
-              builder: (context) => OAuth2RedirectScreen(token: token, refreshToken: refreshToken),
+              builder: (context) => OAuth2RedirectScreen(
+                  token: token, refreshToken: refreshToken),
             );
           }
           return null; // Let standard routing take over

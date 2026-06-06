@@ -17,4 +17,8 @@ public class UserResponse {
     private String provider;
     private String avatarUrl;
     private Set<String> roles;
+    private String dateOfBirth;
+    private Boolean salesNotification;
+    private Boolean newArrivalsNotification;
+    private Boolean deliveryStatusNotification;
 }

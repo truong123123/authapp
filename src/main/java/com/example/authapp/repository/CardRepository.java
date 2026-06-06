@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CardRepository extends JpaRepository<Card, java.util.UUID> {
-    long countByUserId(Long userId);
-    java.util.List<Card> findByUserId(Long userId);
+    long countByCustomerUserId(Long userId);
+    java.util.List<Card> findByCustomerUserId(Long userId);
 }

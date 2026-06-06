@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "cards")
 @Data
@@ -16,17 +18,15 @@ public class Card {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
-    @Column(name = "user_id")
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     @Column(name = "card_type")
     private String cardType;
 
     @Column(name = "last_four")
     private String lastFour;
-
-    @Column(name = "customer_id")
-    private java.util.UUID customerId;
 }

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, java.util.UUID> {
+    java.util.Optional<Customer> findByUserId(Long userId);
 }

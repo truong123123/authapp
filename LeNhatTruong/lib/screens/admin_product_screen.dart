@@ -102,15 +102,18 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Xác nhận xóa'),
-        content: Text('Bạn có chắc chắn muốn xóa sản phẩm "${product.productName}" không?'),
+        content: Text(
+            'Bạn có chắc chắn muốn xóa sản phẩm "${product.productName}" không?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy', style: TextStyle(color: Color(0xFF9B9B9B))),
+            child:
+                const Text('Hủy', style: TextStyle(color: Color(0xFF9B9B9B))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Xóa', style: TextStyle(color: Color(0xFFDB3022))),
+            child:
+                const Text('Xóa', style: TextStyle(color: Color(0xFFDB3022))),
           ),
         ],
       ),
@@ -156,7 +159,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                     p.productName.trim().toLowerCase() ==
                     data['productName'].toString().trim().toLowerCase());
                 if (isDup) {
-                  throw Exception('Sản phẩm có tên "${data['productName']}" đã tồn tại trên hệ thống!');
+                  throw Exception(
+                      'Sản phẩm có tên "${data['productName']}" đã tồn tại trên hệ thống!');
                 }
                 await _productService.createProduct(data);
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -167,13 +171,15 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 final isDup = _allProducts.any((p) =>
                     p.id != product.id &&
                     p.productName.trim().toLowerCase() ==
-                    data['productName'].toString().trim().toLowerCase());
+                        data['productName'].toString().trim().toLowerCase());
                 if (isDup) {
-                  throw Exception('Sản phẩm có tên "${data['productName']}" đã tồn tại trên hệ thống!');
+                  throw Exception(
+                      'Sản phẩm có tên "${data['productName']}" đã tồn tại trên hệ thống!');
                 }
                 await _productService.updateProduct(product.id, data);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cập nhật sản phẩm thành công!')),
+                  const SnackBar(
+                      content: Text('Cập nhật sản phẩm thành công!')),
                 );
               }
               Navigator.pop(context);
@@ -201,7 +207,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         backgroundColor: Colors.white,
         elevation: 1,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: const Color(0xFF222222), size: 24 * scale),
+          icon: Icon(Icons.arrow_back,
+              color: const Color(0xFF222222), size: 24 * scale),
           onPressed: widget.onBack,
         ),
         title: Text(
@@ -214,13 +221,16 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh, color: const Color(0xFFDB3022), size: 24 * scale),
+            icon: Icon(Icons.refresh,
+                color: const Color(0xFFDB3022), size: 24 * scale),
             onPressed: _loadData,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFDB3022))))
+          ? const Center(
+              child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFDB3022))))
           : Column(
               children: [
                 // Search Box
@@ -234,11 +244,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                     },
                     decoration: InputDecoration(
                       hintText: 'Search products by name or brand...',
-                      hintStyle: GoogleFonts.inter(fontSize: 14 * scale, color: const Color(0xFF9B9B9B)),
-                      prefixIcon: Icon(Icons.search, color: const Color(0xFF9B9B9B), size: 20 * scale),
+                      hintStyle: GoogleFonts.inter(
+                          fontSize: 14 * scale, color: const Color(0xFF9B9B9B)),
+                      prefixIcon: Icon(Icons.search,
+                          color: const Color(0xFF9B9B9B), size: 20 * scale),
                       fillColor: Colors.white,
                       filled: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 12 * scale),
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12 * scale),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12 * scale),
                         borderSide: BorderSide.none,
@@ -267,7 +280,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       ),
                       TextButton.icon(
                         onPressed: () => _openProductForm(),
-                        icon: Icon(Icons.add, size: 18 * scale, color: const Color(0xFFDB3022)),
+                        icon: Icon(Icons.add,
+                            size: 18 * scale, color: const Color(0xFFDB3022)),
                         label: Text(
                           'Add Product',
                           style: GoogleFonts.inter(
@@ -287,12 +301,15 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       ? Center(
                           child: Text(
                             'No products found.',
-                            style: GoogleFonts.inter(fontSize: 14 * scale, color: const Color(0xFF9B9B9B)),
+                            style: GoogleFonts.inter(
+                                fontSize: 14 * scale,
+                                color: const Color(0xFF9B9B9B)),
                           ),
                         )
                       : ListView.builder(
                           itemCount: _filteredProducts.length,
-                          padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 16 * scale, vertical: 8 * scale),
                           itemBuilder: (context, index) {
                             final product = _filteredProducts[index];
                             return _buildProductCard(product, scale);
@@ -336,8 +353,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
               child: Image.network(
                 imageUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    Icon(Icons.image, size: 30 * scale, color: const Color(0xFF9B9B9B)),
+                errorBuilder: (context, error, stackTrace) => Icon(Icons.image,
+                    size: 30 * scale, color: const Color(0xFF9B9B9B)),
               ),
             ),
             SizedBox(width: 12 * scale),
@@ -379,7 +396,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                             color: const Color(0xFFDB3022),
                           ),
                         ),
-                        if (product.comparePrice != null && product.comparePrice! > product.salePrice) ...[
+                        if (product.comparePrice != null &&
+                            product.comparePrice! > product.salePrice) ...[
                           SizedBox(width: 8 * scale),
                           Text(
                             '${product.comparePrice!.round()}\$',
@@ -411,11 +429,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: Icon(Icons.edit_outlined, color: const Color(0xFF9B9B9B), size: 20 * scale),
+                  icon: Icon(Icons.edit_outlined,
+                      color: const Color(0xFF9B9B9B), size: 20 * scale),
                   onPressed: () => _openProductForm(product: product),
                 ),
                 IconButton(
-                  icon: Icon(Icons.delete_outline, color: const Color(0xFFDB3022), size: 20 * scale),
+                  icon: Icon(Icons.delete_outline,
+                      color: const Color(0xFFDB3022), size: 20 * scale),
                   onPressed: () => _deleteProduct(product),
                 ),
               ],
@@ -464,8 +484,31 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
   final Set<String> _selectedSizes = {};
   final Set<String> _selectedColors = {};
 
-  final List<String> _allSizes = ['XS', 'S', 'M', 'L', 'XL', 'One Size', '39', '40', '41', '42', '43'];
-  final List<String> _allColors = ['Black', 'White', 'Red', 'Blue', 'Beige', 'Gray', 'Navy', 'Gold', 'Silver', 'Brown'];
+  final List<String> _allSizes = [
+    'XS',
+    'S',
+    'M',
+    'L',
+    'XL',
+    'One Size',
+    '39',
+    '40',
+    '41',
+    '42',
+    '43'
+  ];
+  final List<String> _allColors = [
+    'Black',
+    'White',
+    'Red',
+    'Blue',
+    'Beige',
+    'Gray',
+    'Navy',
+    'Gold',
+    'Silver',
+    'Brown'
+  ];
   final List<String> _allTags = ['NEW', 'SALE', 'TOPS'];
 
   @override
@@ -475,11 +518,15 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
     _nameController = TextEditingController(text: p?.productName ?? '');
     _brandController = TextEditingController(text: p?.brandName ?? '');
     _imageController = TextEditingController(text: p?.imageUrl ?? '');
-    _salePriceController = TextEditingController(text: p?.salePrice.round().toString() ?? '');
+    _salePriceController =
+        TextEditingController(text: p?.salePrice.round().toString() ?? '');
     _comparePriceController = TextEditingController(
-        text: p?.comparePrice != null ? p!.comparePrice!.round().toString() : '');
-    _qtyController = TextEditingController(text: p?.quantity.toString() ?? '50');
-    _shortDescController = TextEditingController(text: p?.shortDescription ?? '');
+        text:
+            p?.comparePrice != null ? p!.comparePrice!.round().toString() : '');
+    _qtyController =
+        TextEditingController(text: p?.quantity.toString() ?? '50');
+    _shortDescController =
+        TextEditingController(text: p?.shortDescription ?? '');
     _descController = TextEditingController(text: p?.productDescription ?? '');
     _typeController = TextEditingController(text: p?.productType ?? 'simple');
 
@@ -555,7 +602,7 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
               borderRadius: BorderRadius.circular(2 * scale),
             ),
           ),
-          
+
           // Form Title
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20 * scale),
@@ -592,8 +639,11 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                     _buildLabel('Product Name *', scale),
                     TextFormField(
                       controller: _nameController,
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Nhập tên sản phẩm' : null,
-                      decoration: _buildInputDecoration('e.g., Casual Denim Jacket', scale),
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? 'Nhập tên sản phẩm'
+                          : null,
+                      decoration: _buildInputDecoration(
+                          'e.g., Casual Denim Jacket', scale),
                     ),
                     SizedBox(height: 16 * scale),
 
@@ -601,7 +651,8 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                     _buildLabel('Brand Name', scale),
                     TextFormField(
                       controller: _brandController,
-                      decoration: _buildInputDecoration('e.g., Mango, adidas', scale),
+                      decoration:
+                          _buildInputDecoration('e.g., Mango, adidas', scale),
                     ),
                     SizedBox(height: 16 * scale),
 
@@ -628,7 +679,9 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                               height: 60 * scale,
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFFDB3022) : Colors.grey[300]!,
+                                  color: isSelected
+                                      ? const Color(0xFFDB3022)
+                                      : Colors.grey[300]!,
                                   width: isSelected ? 2.5 : 1,
                                 ),
                                 borderRadius: BorderRadius.circular(8 * scale),
@@ -638,8 +691,8 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                                 child: Image.network(
                                   netUrl,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (c, o, s) =>
-                                      Icon(Icons.image, size: 20 * scale, color: Colors.grey),
+                                  errorBuilder: (c, o, s) => Icon(Icons.image,
+                                      size: 20 * scale, color: Colors.grey),
                                 ),
                               ),
                             ),
@@ -653,7 +706,8 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                     _buildLabel('Image URL / Path', scale),
                     TextFormField(
                       controller: _imageController,
-                      decoration: _buildInputDecoration('e.g., /images/product1.jpg', scale),
+                      decoration: _buildInputDecoration(
+                          'e.g., /images/product1.jpg', scale),
                     ),
                     SizedBox(height: 16 * scale),
 
@@ -669,11 +723,16 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                                 controller: _salePriceController,
                                 keyboardType: TextInputType.number,
                                 validator: (val) {
-                                  if (val == null || val.trim().isEmpty) return 'Nhập giá bán';
-                                  if (double.tryParse(val) == null) return 'Giá số hợp lệ';
+                                  if (val == null || val.trim().isEmpty) {
+                                    return 'Nhập giá bán';
+                                  }
+                                  if (double.tryParse(val) == null) {
+                                    return 'Giá số hợp lệ';
+                                  }
                                   return null;
                                 },
-                                decoration: _buildInputDecoration('e.g., 99', scale),
+                                decoration:
+                                    _buildInputDecoration('e.g., 99', scale),
                               ),
                             ],
                           ),
@@ -688,12 +747,15 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                                 controller: _comparePriceController,
                                 keyboardType: TextInputType.number,
                                 validator: (val) {
-                                  if (val != null && val.trim().isNotEmpty && double.tryParse(val) == null) {
+                                  if (val != null &&
+                                      val.trim().isNotEmpty &&
+                                      double.tryParse(val) == null) {
                                     return 'Giá số hợp lệ';
                                   }
                                   return null;
                                 },
-                                decoration: _buildInputDecoration('e.g., 149', scale),
+                                decoration:
+                                    _buildInputDecoration('e.g., 149', scale),
                               ),
                             ],
                           ),
@@ -714,11 +776,16 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                                 controller: _qtyController,
                                 keyboardType: TextInputType.number,
                                 validator: (val) {
-                                  if (val == null || val.trim().isEmpty) return 'Nhập số lượng';
-                                  if (int.tryParse(val) == null) return 'Số nguyên hợp lệ';
+                                  if (val == null || val.trim().isEmpty) {
+                                    return 'Nhập số lượng';
+                                  }
+                                  if (int.tryParse(val) == null) {
+                                    return 'Số nguyên hợp lệ';
+                                  }
                                   return null;
                                 },
-                                decoration: _buildInputDecoration('e.g., 50', scale),
+                                decoration:
+                                    _buildInputDecoration('e.g., 50', scale),
                               ),
                             ],
                           ),
@@ -731,7 +798,8 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                               _buildLabel('Product Type', scale),
                               TextFormField(
                                 controller: _typeController,
-                                decoration: _buildInputDecoration('e.g., simple', scale),
+                                decoration: _buildInputDecoration(
+                                    'e.g., simple', scale),
                               ),
                             ],
                           ),
@@ -746,8 +814,11 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                       controller: _shortDescController,
                       maxLines: 2,
                       maxLength: 165,
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Nhập mô tả ngắn' : null,
-                      decoration: _buildInputDecoration('Short details for listing card...', scale),
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? 'Nhập mô tả ngắn'
+                          : null,
+                      decoration: _buildInputDecoration(
+                          'Short details for listing card...', scale),
                     ),
                     SizedBox(height: 16 * scale),
 
@@ -755,8 +826,11 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                     TextFormField(
                       controller: _descController,
                       maxLines: 4,
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Nhập mô tả đầy đủ' : null,
-                      decoration: _buildInputDecoration('Detailed specifications and description...', scale),
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? 'Nhập mô tả đầy đủ'
+                          : null,
+                      decoration: _buildInputDecoration(
+                          'Detailed specifications and description...', scale),
                     ),
                     SizedBox(height: 20 * scale),
 
@@ -773,12 +847,19 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                           checkmarkColor: const Color(0xFFDB3022),
                           labelStyle: GoogleFonts.inter(
                             fontSize: 13 * scale,
-                            color: isSelected ? const Color(0xFFDB3022) : const Color(0xFF222222),
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            color: isSelected
+                                ? const Color(0xFFDB3022)
+                                : const Color(0xFF222222),
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10 * scale),
-                            side: BorderSide(color: isSelected ? const Color(0xFFDB3022) : Colors.grey[300]!),
+                            side: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xFFDB3022)
+                                    : Colors.grey[300]!),
                           ),
                           label: Text(cat.categoryName),
                           onSelected: (val) {
@@ -808,11 +889,16 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                           checkmarkColor: const Color(0xFFDB3022),
                           labelStyle: GoogleFonts.inter(
                             fontSize: 13 * scale,
-                            color: isSelected ? const Color(0xFFDB3022) : const Color(0xFF222222),
+                            color: isSelected
+                                ? const Color(0xFFDB3022)
+                                : const Color(0xFF222222),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10 * scale),
-                            side: BorderSide(color: isSelected ? const Color(0xFFDB3022) : Colors.grey[300]!),
+                            side: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xFFDB3022)
+                                    : Colors.grey[300]!),
                           ),
                           label: Text(size),
                           onSelected: (val) {
@@ -842,11 +928,16 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                           checkmarkColor: const Color(0xFFDB3022),
                           labelStyle: GoogleFonts.inter(
                             fontSize: 13 * scale,
-                            color: isSelected ? const Color(0xFFDB3022) : const Color(0xFF222222),
+                            color: isSelected
+                                ? const Color(0xFFDB3022)
+                                : const Color(0xFF222222),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10 * scale),
-                            side: BorderSide(color: isSelected ? const Color(0xFFDB3022) : Colors.grey[300]!),
+                            side: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xFFDB3022)
+                                    : Colors.grey[300]!),
                           ),
                           label: Text(color),
                           onSelected: (val) {
@@ -876,11 +967,16 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                           checkmarkColor: const Color(0xFFDB3022),
                           labelStyle: GoogleFonts.inter(
                             fontSize: 13 * scale,
-                            color: isSelected ? const Color(0xFFDB3022) : const Color(0xFF222222),
+                            color: isSelected
+                                ? const Color(0xFFDB3022)
+                                : const Color(0xFF222222),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10 * scale),
-                            side: BorderSide(color: isSelected ? const Color(0xFFDB3022) : Colors.grey[300]!),
+                            side: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xFFDB3022)
+                                    : Colors.grey[300]!),
                           ),
                           label: Text(tag),
                           onSelected: (val) {
@@ -912,7 +1008,9 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
                         ),
                         onPressed: _submit,
                         child: Text(
-                          widget.product == null ? 'CREATE PRODUCT' : 'SAVE CHANGES',
+                          widget.product == null
+                              ? 'CREATE PRODUCT'
+                              : 'SAVE CHANGES',
                           style: GoogleFonts.inter(
                             fontSize: 15 * scale,
                             fontWeight: FontWeight.w700,
@@ -949,10 +1047,12 @@ class _ProductFormSheetState extends State<_ProductFormSheet> {
   InputDecoration _buildInputDecoration(String hint, double scale) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.inter(fontSize: 13 * scale, color: const Color(0xFF9B9B9B)),
+      hintStyle: GoogleFonts.inter(
+          fontSize: 13 * scale, color: const Color(0xFF9B9B9B)),
       fillColor: const Color(0xFFF9F9F9),
       filled: true,
-      contentPadding: EdgeInsets.symmetric(horizontal: 14 * scale, vertical: 10 * scale),
+      contentPadding:
+          EdgeInsets.symmetric(horizontal: 14 * scale, vertical: 10 * scale),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10 * scale),
         borderSide: BorderSide(color: Colors.grey[200]!),

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CustomerAddressRepository extends JpaRepository<CustomerAddress, java.util.UUID> {
-    long countByUserId(Long userId);
-    java.util.List<CustomerAddress> findByUserId(Long userId);
+    long countByCustomerUserId(Long userId);
+    java.util.List<CustomerAddress> findByCustomerUserId(Long userId);
 }

@@ -59,7 +59,8 @@ class _BrandScreenState extends State<BrandScreen> {
   Widget build(BuildContext context) {
     final scale = widget.scale;
     final filteredBrands = _allBrands
-        .where((brand) => brand.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where(
+            (brand) => brand.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
@@ -68,7 +69,8 @@ class _BrandScreenState extends State<BrandScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 20 * scale),
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: const Color(0xFF222222), size: 20 * scale),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
@@ -86,7 +88,8 @@ class _BrandScreenState extends State<BrandScreen> {
           children: [
             // --- Search Bar ---
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 12 * scale),
+              padding: EdgeInsets.symmetric(
+                  horizontal: 16 * scale, vertical: 12 * scale),
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF9F9F9),
@@ -166,20 +169,29 @@ class _BrandScreenState extends State<BrandScreen> {
                                   brand,
                                   style: GoogleFonts.inter(
                                     fontSize: 16 * scale,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                    color: isSelected ? const Color(0xFFDB3022) : const Color(0xFF222222),
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? const Color(0xFFDB3022)
+                                        : const Color(0xFF222222),
                                   ),
                                 ),
                                 Container(
                                   width: 20 * scale,
                                   height: 20 * scale,
                                   decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFFDB3022) : Colors.transparent,
+                                    color: isSelected
+                                        ? const Color(0xFFDB3022)
+                                        : Colors.transparent,
                                     border: Border.all(
-                                      color: isSelected ? const Color(0xFFDB3022) : const Color(0xFF9B9B9B),
+                                      color: isSelected
+                                          ? const Color(0xFFDB3022)
+                                          : const Color(0xFF9B9B9B),
                                       width: 1.5 * scale,
                                     ),
-                                    borderRadius: BorderRadius.circular(4 * scale),
+                                    borderRadius:
+                                        BorderRadius.circular(4 * scale),
                                   ),
                                   child: isSelected
                                       ? Icon(
@@ -218,7 +230,8 @@ class _BrandScreenState extends State<BrandScreen> {
                       child: OutlinedButton(
                         onPressed: _discardSelections,
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF222222), width: 1.5),
+                          side: const BorderSide(
+                              color: Color(0xFF222222), width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24 * scale),
                           ),

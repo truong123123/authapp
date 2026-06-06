@@ -10,9 +10,9 @@ class AppConstants {
       return 'http://localhost:8080';
     }
     if (Platform.isAndroid) {
-      // Sử dụng localhost kết hợp với adb reverse tcp:8080 tcp:8080 
+      // Sử dụng localhost kết hợp với adb reverse tcp:8080 tcp:8080
       // để Google OAuth2 không chặn địa chỉ IP riêng tư (private IP).
-      return 'http://localhost:8080'; 
+      return 'http://localhost:8080';
     }
     return 'http://localhost:8080';
   }

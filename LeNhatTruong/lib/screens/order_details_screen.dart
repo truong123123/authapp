@@ -40,7 +40,8 @@ class OrderDetailsScreen extends StatelessWidget {
         children: [
           // Custom Header Bar
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 4 * scale, vertical: 8 * scale),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -180,15 +181,19 @@ class OrderDetailsScreen extends StatelessWidget {
                   SizedBox(height: 16 * scale),
 
                   // Order Details attributes (Shipping address, payment method, etc.)
-                  _buildInfoRow('Shipping Address:', order.shippingAddress, scale),
+                  _buildInfoRow(
+                      'Shipping Address:', order.shippingAddress, scale),
                   SizedBox(height: 16 * scale),
                   _buildPaymentMethodRow(scale),
                   SizedBox(height: 16 * scale),
-                  _buildInfoRow('Delivery method:', order.deliveryMethod, scale),
+                  _buildInfoRow(
+                      'Delivery method:', order.deliveryMethod, scale),
                   SizedBox(height: 16 * scale),
                   _buildInfoRow('Discount:', order.discount, scale),
                   SizedBox(height: 16 * scale),
-                  _buildInfoRow('Total Amount:', '${order.totalAmount}\$', scale, isTotal: true),
+                  _buildInfoRow(
+                      'Total Amount:', '${order.totalAmount}\$', scale,
+                      isTotal: true),
 
                   SizedBox(height: 36 * scale),
 
@@ -204,7 +209,8 @@ class OrderDetailsScreen extends StatelessWidget {
                                 SnackBar(
                                   content: Text(
                                     'Đã thêm tất cả mặt hàng vào giỏ hàng!',
-                                    style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+                                    style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w500),
                                   ),
                                   behavior: SnackBarBehavior.floating,
                                   backgroundColor: const Color(0xFF222222),
@@ -214,7 +220,8 @@ class OrderDetailsScreen extends StatelessWidget {
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFF222222),
-                              side: const BorderSide(color: Color(0xFF222222), width: 1.5),
+                              side: const BorderSide(
+                                  color: Color(0xFF222222), width: 1.5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(24 * scale),
                               ),
@@ -241,6 +248,7 @@ class OrderDetailsScreen extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (context) => RatingReviewsScreen(
                                       productName: order.items.first.title,
+                                      productId: order.items.first.productId,
                                     ),
                                   ),
                                 );
@@ -325,7 +333,8 @@ class OrderDetailsScreen extends StatelessWidget {
           // Product Info
           Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 8 * scale),
+              padding: EdgeInsets.symmetric(
+                  horizontal: 12 * scale, vertical: 8 * scale),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -433,7 +442,8 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, double scale, {bool isTotal = false}) {
+  Widget _buildInfoRow(String label, String value, double scale,
+      {bool isTotal = false}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

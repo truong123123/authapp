@@ -1,13 +1,14 @@
 package com.example.authapp.config;
 
 import com.example.authapp.entity.Category;
-import com.example.authapp.entity.ProductCategory;
 import com.example.authapp.entity.Product;
 import com.example.authapp.entity.Tag;
 import com.example.authapp.repository.CategoryRepository;
-import com.example.authapp.repository.ProductCategoryRepository;
 import com.example.authapp.repository.ProductRepository;
 import com.example.authapp.repository.TagRepository;
+import com.example.authapp.repository.ReviewRepository;
+import com.example.authapp.repository.OrderRepository;
+import com.example.authapp.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -20,12 +21,15 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@org.springframework.core.annotation.Order(1)
 public class DataInitializer implements CommandLineRunner {
 
         private final ProductRepository productRepository;
         private final TagRepository tagRepository;
         private final CategoryRepository categoryRepository;
-        private final ProductCategoryRepository productCategoryRepository;
+        private final ReviewRepository reviewRepository;
+        private final OrderRepository orderRepository;
+        private final OrderItemRepository orderItemRepository;
 
         @Override
         public void run(String... args) throws Exception {
@@ -39,9 +43,11 @@ public class DataInitializer implements CommandLineRunner {
                 Tag tagTops = tagRepository.findByTagName("TOPS")
                                 .orElseGet(() -> tagRepository.save(Tag.builder().tagName("TOPS").build()));
 
-                // Clean up old category links and products to ensure we re-seed with sizes and colors
-                log.info("Resetting old products and categories for clean reseed...");
-                productCategoryRepository.deleteAll();
+                // Clean up old products to ensure we re-seed with sizes and colors
+                log.info("Resetting old reviews, order items, orders, and products for clean reseed...");
+                reviewRepository.deleteAll();
+                orderItemRepository.deleteAll();
+                orderRepository.deleteAll();
                 productRepository.deleteAll();
 
                 List<Category> allCategories = categoryRepository.findAll();
@@ -51,7 +57,6 @@ public class DataInitializer implements CommandLineRunner {
                                 categoryRepository.delete(cat);
                         }
                 }
-                productCategoryRepository.flush();
                 categoryRepository.flush();
 
                 // Ensure categories exist
@@ -851,42 +856,36 @@ public class DataInitializer implements CommandLineRunner {
                 linkProductToCategory(p22, catClothes);
                 linkProductToCategory(p23, catAccessories);
                 linkProductToCategory(p24, catClothes);
-                linkProductToCategory(p25, catClothes);
-                linkProductToCategory(p25, catNew);
-                linkProductToCategory(p26, catClothes);
-                linkProductToCategory(p26, catNew);
-                linkProductToCategory(p27, catClothes);
-                linkProductToCategory(p27, catNew);
-                linkProductToCategory(p28, catClothes);
-                linkProductToCategory(p28, catNew);
-                linkProductToCategory(p29, catClothes);
-                linkProductToCategory(p29, catNew);
-                linkProductToCategory(p30, catClothes);
-                linkProductToCategory(p30, catNew);
-                linkProductToCategory(p31, catAccessories);
-                linkProductToCategory(p31, catNew);
-                linkProductToCategory(p32, catClothes);
-                linkProductToCategory(p32, catNew);
-                linkProductToCategory(p33, catClothes);
-                linkProductToCategory(p33, catNew);
-                linkProductToCategory(p34, catClothes);
-                linkProductToCategory(p34, catNew);
-                linkProductToCategory(p35, catClothes);
-                linkProductToCategory(p35, catNew);
+                linkProductToCategory(p25, catClothes, catNew);
+                linkProductToCategory(p26, catClothes, catNew);
+                linkProductToCategory(p27, catClothes, catNew);
+                linkProductToCategory(p28, catClothes, catNew);
+                linkProductToCategory(p29, catClothes, catNew);
+                linkProductToCategory(p30, catClothes, catNew);
+                linkProductToCategory(p31, catAccessories, catNew);
+                linkProductToCategory(p32, catClothes, catNew);
+                linkProductToCategory(p33, catClothes, catNew);
+                linkProductToCategory(p34, catClothes, catNew);
+                linkProductToCategory(p35, catClothes, catNew);
                 log.info("TOPS and other product data initialized successfully.");
 
-                // Associate products with categories
-                linkProductToCategory(p1, catClothes);
-                linkProductToCategory(p2, catClothes);
-                linkProductToCategory(p3, catNew);
         }
 
-        private void linkProductToCategory(Product product, Category category) {
-                if (!productCategoryRepository.existsByProductAndCategory(product, category)) {
-                        productCategoryRepository.save(ProductCategory.builder()
-                                        .product(product)
-                                        .category(category)
-                                        .build());
+        private void linkProductToCategory(Product product, Category... categories) {
+                if (product.getCategories() == null) {
+                        product.setCategories(new HashSet<>());
+                }
+                boolean modified = false;
+                for (Category category : categories) {
+                        boolean exists = product.getCategories().stream()
+                                .anyMatch(c -> c.getId().equals(category.getId()));
+                        if (!exists) {
+                                product.getCategories().add(category);
+                                modified = true;
+                        }
+                }
+                if (modified) {
+                        productRepository.save(product);
                 }
         }
 }

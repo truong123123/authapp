@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 @Entity
 @Table(name = "coupons")
 @Data
@@ -16,22 +19,20 @@ public class Coupon {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
-    @Column(name = "user_id")
-    private Long userId;
-
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true, length = 50)
     private String code;
 
     @Column(name = "discount_value")
     private Double discountValue;
 
-    @Column(name = "discount_type", nullable = false)
+    @Column(name = "discount_type", nullable = false, length = 50)
     private String discountType;
 
     @Column(name = "times_used", nullable = false)
-    private Double timesUsed;
+    @Builder.Default
+    private Double timesUsed = 0.0;
 
     @Column(name = "max_usage")
     private Double maxUsage;
@@ -40,8 +41,8 @@ public class Coupon {
     private Double orderAmountLimit;
 
     @Column(name = "coupon_start_date")
-    private java.time.OffsetDateTime couponStartDate;
+    private OffsetDateTime couponStartDate;
 
     @Column(name = "coupon_end_date")
-    private java.time.OffsetDateTime couponEndDate;
+    private OffsetDateTime couponEndDate;
 }

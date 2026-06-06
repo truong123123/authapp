@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/favorites_provider.dart';
 import '../providers/cart_provider.dart';
-import '../models/product.dart';
 import '../utils/constants.dart';
 import 'product_detail_screen.dart';
 
@@ -20,7 +19,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   String _sortLabel = 'Price: lowest to high';
   bool _sortAscending = true;
 
-  static const List<String> _categories = ['All', 'Summer', 'T-Shirts', 'Shirts', 'Shoes', 'Accessories'];
+  static const List<String> _categories = [
+    'All',
+    'Summer',
+    'T-Shirts',
+    'Shirts',
+    'Shoes',
+    'Accessories'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +39,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         // Filter by category tag
         if (_selectedCategory != 'All') {
           items = items.where((item) {
-            return item.product.tags
-                .any((t) => t.tagName.toLowerCase().contains(_selectedCategory.toLowerCase()));
+            return item.product.tags.any((t) => t.tagName
+                .toLowerCase()
+                .contains(_selectedCategory.toLowerCase()));
           }).toList();
         }
 
@@ -51,7 +58,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               children: [
                 // Header
                 Padding(
-                  padding: EdgeInsets.fromLTRB(16 * scale, 16 * scale, 16 * scale, 0),
+                  padding: EdgeInsets.fromLTRB(
+                      16 * scale, 16 * scale, 16 * scale, 0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -65,7 +73,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.search, size: 26 * scale, color: const Color(0xFF222222)),
+                        icon: Icon(Icons.search,
+                            size: 26 * scale, color: const Color(0xFF222222)),
                         onPressed: () {},
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -92,12 +101,17 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           onTap: () => setState(() => _selectedCategory = cat),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
-                            padding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 8 * scale),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20 * scale, vertical: 8 * scale),
                             decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFF222222) : Colors.white,
+                              color: isSelected
+                                  ? const Color(0xFF222222)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(100),
                               border: Border.all(
-                                color: isSelected ? const Color(0xFF222222) : const Color(0xFFE0E0E0),
+                                color: isSelected
+                                    ? const Color(0xFF222222)
+                                    : const Color(0xFFE0E0E0),
                               ),
                               boxShadow: isSelected
                                   ? [
@@ -114,7 +128,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                               style: GoogleFonts.inter(
                                 fontSize: 13 * scale,
                                 fontWeight: FontWeight.w600,
-                                color: isSelected ? Colors.white : const Color(0xFF222222),
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF222222),
                               ),
                             ),
                           ),
@@ -136,7 +152,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         onTap: () {},
                         child: Row(
                           children: [
-                            Icon(Icons.tune, size: 18 * scale, color: const Color(0xFF222222)),
+                            Icon(Icons.tune,
+                                size: 18 * scale,
+                                color: const Color(0xFF222222)),
                             SizedBox(width: 4 * scale),
                             Text(
                               'Filters',
@@ -162,7 +180,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         },
                         child: Row(
                           children: [
-                            Icon(Icons.swap_vert, size: 18 * scale, color: const Color(0xFF222222)),
+                            Icon(Icons.swap_vert,
+                                size: 18 * scale,
+                                color: const Color(0xFF222222)),
                             SizedBox(width: 4 * scale),
                             Text(
                               _sortLabel,
@@ -180,7 +200,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       GestureDetector(
                         onTap: () => setState(() => _isGridView = !_isGridView),
                         child: Icon(
-                          _isGridView ? Icons.grid_view_rounded : Icons.view_list_rounded,
+                          _isGridView
+                              ? Icons.grid_view_rounded
+                              : Icons.view_list_rounded,
                           size: 22 * scale,
                           color: const Color(0xFF222222),
                         ),
@@ -212,7 +234,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.favorite_border_rounded, size: 80 * scale, color: const Color(0xFFE0E0E0)),
+          Icon(Icons.favorite_border_rounded,
+              size: 80 * scale, color: const Color(0xFFE0E0E0)),
           SizedBox(height: 16 * scale),
           Text(
             'No favorites yet',
@@ -237,7 +260,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildListView(List<FavoriteItem> items, double scale, FavoritesProvider favProvider) {
+  Widget _buildListView(
+      List<FavoriteItem> items, double scale, FavoritesProvider favProvider) {
     return ListView.separated(
       padding: EdgeInsets.symmetric(horizontal: 16 * scale),
       itemCount: items.length,
@@ -246,12 +270,17 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildListCard(FavoriteItem item, double scale, FavoritesProvider favProvider) {
+  Widget _buildListCard(
+      FavoriteItem item, double scale, FavoritesProvider favProvider) {
     final product = item.product;
-    final isOnSale = product.comparePrice != null && product.comparePrice! > product.salePrice;
+    final isOnSale = product.comparePrice != null &&
+        product.comparePrice! > product.salePrice;
     final isNew = product.tags.any((t) => t.tagName.toUpperCase() == 'NEW');
     final discountPct = isOnSale
-        ? (((product.comparePrice! - product.salePrice) / product.comparePrice!) * 100).round()
+        ? (((product.comparePrice! - product.salePrice) /
+                    product.comparePrice!) *
+                100)
+            .round()
         : 0;
     final imageUrl = _buildImageUrl(product.imageUrl);
     final rating = product.ratingAverage ?? 0.0;
@@ -262,7 +291,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product)),
+          MaterialPageRoute(
+              builder: (_) => ProductDetailScreen(product: product)),
         );
       },
       child: Container(
@@ -282,7 +312,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           children: [
             // Image
             ClipRRect(
-              borderRadius: BorderRadius.horizontal(left: Radius.circular(8 * scale)),
+              borderRadius:
+                  BorderRadius.horizontal(left: Radius.circular(8 * scale)),
               child: Stack(
                 children: [
                   SizedBox(
@@ -293,7 +324,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             imageUrl,
                             fit: BoxFit.cover,
                             alignment: Alignment.center,
-                            errorBuilder: (_, __, ___) => Container(color: const Color(0xFFC4C4C4)),
+                            errorBuilder: (_, __, ___) =>
+                                Container(color: const Color(0xFFC4C4C4)),
                           )
                         : Container(color: const Color(0xFFC4C4C4)),
                   ),
@@ -308,7 +340,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     Positioned(
                       top: 8 * scale,
                       left: 8 * scale,
-                      child: _badge('-$discountPct%', const Color(0xFFDB3022), scale),
+                      child: _badge(
+                          '-$discountPct%', const Color(0xFFDB3022), scale),
                     ),
                   // Sold out overlay
                   if (isSoldOut)
@@ -335,7 +368,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             // Content
             Expanded(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(12 * scale, 12 * scale, 8 * scale, 8 * scale),
+                padding: EdgeInsets.fromLTRB(
+                    12 * scale, 12 * scale, 8 * scale, 8 * scale),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -355,7 +389,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       style: GoogleFonts.outfit(
                         fontSize: 15 * scale,
                         fontWeight: FontWeight.w700,
-                        color: isSoldOut ? const Color(0xFF9B9B9B) : const Color(0xFF222222),
+                        color: isSoldOut
+                            ? const Color(0xFF9B9B9B)
+                            : const Color(0xFF222222),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -366,7 +402,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       children: [
                         Text(
                           'Color: ',
-                          style: GoogleFonts.inter(fontSize: 11 * scale, color: const Color(0xFF9B9B9B)),
+                          style: GoogleFonts.inter(
+                              fontSize: 11 * scale,
+                              color: const Color(0xFF9B9B9B)),
                         ),
                         Text(
                           item.selectedColor,
@@ -379,7 +417,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         SizedBox(width: 12 * scale),
                         Text(
                           'Size: ',
-                          style: GoogleFonts.inter(fontSize: 11 * scale, color: const Color(0xFF9B9B9B)),
+                          style: GoogleFonts.inter(
+                              fontSize: 11 * scale,
+                              color: const Color(0xFF9B9B9B)),
                         ),
                         Text(
                           item.selectedSize,
@@ -422,13 +462,15 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         // Stars
                         Row(
                           children: [
-                            ...List.generate(5, (i) => Icon(
-                              Icons.star,
-                              size: 12 * scale,
-                              color: i < rating.floor()
-                                  ? const Color(0xFFFFBA49)
-                                  : const Color(0xFFE0E0E0),
-                            )),
+                            ...List.generate(
+                                5,
+                                (i) => Icon(
+                                      Icons.star,
+                                      size: 12 * scale,
+                                      color: i < rating.floor()
+                                          ? const Color(0xFFFFBA49)
+                                          : const Color(0xFFE0E0E0),
+                                    )),
                             SizedBox(width: 4 * scale),
                             Text(
                               '($reviewCount)',
@@ -455,23 +497,30 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   padding: EdgeInsets.only(top: 8 * scale, right: 8 * scale),
                   child: GestureDetector(
                     onTap: () => favProvider.removeFavorite(product.id),
-                    child: Icon(Icons.close, size: 18 * scale, color: const Color(0xFF9B9B9B)),
+                    child: Icon(Icons.close,
+                        size: 18 * scale, color: const Color(0xFF9B9B9B)),
                   ),
                 ),
                 // Cart button
                 Padding(
-                  padding: EdgeInsets.only(bottom: 10 * scale, right: 10 * scale),
+                  padding:
+                      EdgeInsets.only(bottom: 10 * scale, right: 10 * scale),
                   child: GestureDetector(
                     onTap: isSoldOut
                         ? null
                         : () {
-                            final size = item.selectedSize.isEmpty ? 'M' : item.selectedSize;
-                            final color = item.selectedColor.isEmpty ? 'Black' : item.selectedColor;
+                            final size = item.selectedSize.isEmpty
+                                ? 'M'
+                                : item.selectedSize;
+                            final color = item.selectedColor.isEmpty
+                                ? 'Black'
+                                : item.selectedColor;
                             Provider.of<CartProvider>(context, listen: false)
                                 .addItem(product, size, color);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Added ${product.productName} to bag!'),
+                                content: Text(
+                                    'Added ${product.productName} to bag!'),
                                 backgroundColor: Colors.green,
                                 duration: const Duration(seconds: 2),
                               ),
@@ -481,13 +530,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       width: 36 * scale,
                       height: 36 * scale,
                       decoration: BoxDecoration(
-                        color: isSoldOut ? const Color(0xFFE0E0E0) : const Color(0xFFDB3022),
+                        color: isSoldOut
+                            ? const Color(0xFFE0E0E0)
+                            : const Color(0xFFDB3022),
                         shape: BoxShape.circle,
                         boxShadow: isSoldOut
                             ? []
                             : [
                                 BoxShadow(
-                                  color: const Color(0xFFDB3022).withOpacity(0.35),
+                                  color:
+                                      const Color(0xFFDB3022).withOpacity(0.35),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -509,7 +561,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildGridView(List<FavoriteItem> items, double scale, FavoritesProvider favProvider) {
+  Widget _buildGridView(
+      List<FavoriteItem> items, double scale, FavoritesProvider favProvider) {
     return GridView.builder(
       padding: EdgeInsets.symmetric(horizontal: 16 * scale),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -523,12 +576,17 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildGridCard(FavoriteItem item, double scale, FavoritesProvider favProvider) {
+  Widget _buildGridCard(
+      FavoriteItem item, double scale, FavoritesProvider favProvider) {
     final product = item.product;
-    final isOnSale = product.comparePrice != null && product.comparePrice! > product.salePrice;
+    final isOnSale = product.comparePrice != null &&
+        product.comparePrice! > product.salePrice;
     final isNew = product.tags.any((t) => t.tagName.toUpperCase() == 'NEW');
     final discountPct = isOnSale
-        ? (((product.comparePrice! - product.salePrice) / product.comparePrice!) * 100).round()
+        ? (((product.comparePrice! - product.salePrice) /
+                    product.comparePrice!) *
+                100)
+            .round()
         : 0;
     final imageUrl = _buildImageUrl(product.imageUrl);
     final rating = product.ratingAverage ?? 0.0;
@@ -539,7 +597,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ProductDetailScreen(product: product)),
+          MaterialPageRoute(
+              builder: (_) => ProductDetailScreen(product: product)),
         );
       },
       child: Container(
@@ -561,7 +620,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             Expanded(
               flex: 6,
               child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(8 * scale)),
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(8 * scale)),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -585,7 +645,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       Positioned(
                         top: 8 * scale,
                         left: 8 * scale,
-                        child: _badge('-$discountPct%', const Color(0xFFDB3022), scale),
+                        child: _badge(
+                            '-$discountPct%', const Color(0xFFDB3022), scale),
                       ),
                     // Sold out overlay
                     if (isSoldOut)
@@ -594,7 +655,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         left: 0,
                         right: 0,
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 6 * scale),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8 * scale, vertical: 6 * scale),
                           color: Colors.white.withOpacity(0.82),
                           child: Text(
                             'Sorry, this item is currently sold out',
@@ -619,7 +681,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             color: Colors.white.withOpacity(0.9),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.close, size: 14 * scale, color: const Color(0xFF9B9B9B)),
+                          child: Icon(Icons.close,
+                              size: 14 * scale, color: const Color(0xFF9B9B9B)),
                         ),
                       ),
                     ),
@@ -631,13 +694,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         onTap: isSoldOut
                             ? null
                             : () {
-                                final size = item.selectedSize.isEmpty ? 'M' : item.selectedSize;
-                                final color = item.selectedColor.isEmpty ? 'Black' : item.selectedColor;
-                                Provider.of<CartProvider>(context, listen: false)
+                                final size = item.selectedSize.isEmpty
+                                    ? 'M'
+                                    : item.selectedSize;
+                                final color = item.selectedColor.isEmpty
+                                    ? 'Black'
+                                    : item.selectedColor;
+                                Provider.of<CartProvider>(context,
+                                        listen: false)
                                     .addItem(product, size, color);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Added ${product.productName} to bag!'),
+                                    content: Text(
+                                        'Added ${product.productName} to bag!'),
                                     backgroundColor: Colors.green,
                                     duration: const Duration(seconds: 2),
                                   ),
@@ -647,13 +716,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           width: 34 * scale,
                           height: 34 * scale,
                           decoration: BoxDecoration(
-                            color: isSoldOut ? const Color(0xFFE0E0E0) : const Color(0xFFDB3022),
+                            color: isSoldOut
+                                ? const Color(0xFFE0E0E0)
+                                : const Color(0xFFDB3022),
                             shape: BoxShape.circle,
                             boxShadow: isSoldOut
                                 ? []
                                 : [
                                     BoxShadow(
-                                      color: const Color(0xFFDB3022).withOpacity(0.4),
+                                      color: const Color(0xFFDB3022)
+                                          .withOpacity(0.4),
                                       blurRadius: 8,
                                       offset: const Offset(0, 3),
                                     ),
@@ -676,20 +748,23 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             Expanded(
               flex: 4,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(10 * scale, 8 * scale, 10 * scale, 8 * scale),
+                padding: EdgeInsets.fromLTRB(
+                    10 * scale, 8 * scale, 10 * scale, 8 * scale),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Stars
                     Row(
                       children: [
-                        ...List.generate(5, (i) => Icon(
-                          Icons.star,
-                          size: 11 * scale,
-                          color: i < rating.floor()
-                              ? const Color(0xFFFFBA49)
-                              : const Color(0xFFE0E0E0),
-                        )),
+                        ...List.generate(
+                            5,
+                            (i) => Icon(
+                                  Icons.star,
+                                  size: 11 * scale,
+                                  color: i < rating.floor()
+                                      ? const Color(0xFFFFBA49)
+                                      : const Color(0xFFE0E0E0),
+                                )),
                         SizedBox(width: 3 * scale),
                         Text(
                           '($reviewCount)',
@@ -715,7 +790,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       style: GoogleFonts.outfit(
                         fontSize: 13 * scale,
                         fontWeight: FontWeight.w700,
-                        color: isSoldOut ? const Color(0xFF9B9B9B) : const Color(0xFF222222),
+                        color: isSoldOut
+                            ? const Color(0xFF9B9B9B)
+                            : const Color(0xFF222222),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -726,7 +803,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       children: [
                         Text(
                           'Color: ',
-                          style: GoogleFonts.inter(fontSize: 10 * scale, color: const Color(0xFF9B9B9B)),
+                          style: GoogleFonts.inter(
+                              fontSize: 10 * scale,
+                              color: const Color(0xFF9B9B9B)),
                         ),
                         Text(
                           item.selectedColor,
@@ -738,7 +817,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                         ),
                         Text(
                           '  Size: ',
-                          style: GoogleFonts.inter(fontSize: 10 * scale, color: const Color(0xFF9B9B9B)),
+                          style: GoogleFonts.inter(
+                              fontSize: 10 * scale,
+                              color: const Color(0xFF9B9B9B)),
                         ),
                         Text(
                           item.selectedSize,

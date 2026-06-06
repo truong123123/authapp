@@ -1,5 +1,6 @@
 package com.example.authapp.controller;
 
+import com.example.authapp.dto.request.*;
 import com.example.authapp.dto.response.UserResponse;
 import com.example.authapp.dto.response.UserProfileStatsResponse;
 import com.example.authapp.entity.*;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -22,30 +25,110 @@ public class UserController {
     private final CouponRepository couponRepository;
     private final ReviewRepository reviewRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final CustomerRepository customerRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+
+    private Customer getOrCreateCustomer(User user) {
+        return customerRepository.findByUserId(user.getId())
+                .orElseGet(() -> {
+                    String[] names = user.getName().split(" ", 2);
+                    String firstName = names[0];
+                    String lastName = names.length > 1 ? names[1] : "";
+                    if (lastName.isEmpty()) {
+                        lastName = firstName;
+                    }
+                    Customer customer = Customer.builder()
+                            .user(user)
+                            .firstName(firstName)
+                            .lastName(lastName)
+                            .email(user.getEmail())
+                            .passwordHash(user.getPassword() != null ? user.getPassword() : "")
+                            .active(true)
+                            .registeredAt(java.time.OffsetDateTime.now())
+                            .updatedAt(java.time.OffsetDateTime.now())
+                            .build();
+                    return customerRepository.save(customer);
+                });
+    }
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         User user = userDetails.getUser();
-        UserResponse response = UserResponse.builder()
+        Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
+        
+        UserResponse.UserResponseBuilder builder = UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .provider(user.getProvider())
                 .avatarUrl(user.getAvatarUrl())
-                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
-                .build();
-        return ResponseEntity.ok(response);
+                .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()));
+
+        if (customer != null) {
+            builder.dateOfBirth(customer.getDateOfBirth() != null ? customer.getDateOfBirth().toString() : null)
+                   .salesNotification(customer.getSalesNotification())
+                   .newArrivalsNotification(customer.getNewArrivalsNotification())
+                   .deliveryStatusNotification(customer.getDeliveryStatusNotification());
+        } else {
+            builder.salesNotification(true)
+                   .newArrivalsNotification(true)
+                   .deliveryStatusNotification(true);
+        }
+
+        return ResponseEntity.ok(builder.build());
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<Void> updateProfile(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody ProfileUpdateRequest request
+    ) {
+        User user = userDetails.getUser();
+        Customer customer = getOrCreateCustomer(user);
+
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            user.setName(request.getName().trim());
+            userRepository.save(user);
+            
+            String[] names = user.getName().split(" ", 2);
+            customer.setFirstName(names[0]);
+            customer.setLastName(names.length > 1 ? names[1] : names[0]);
+        }
+
+        if (request.getDateOfBirth() != null && !request.getDateOfBirth().trim().isEmpty()) {
+            try {
+                customer.setDateOfBirth(LocalDate.parse(request.getDateOfBirth().trim()));
+            } catch (Exception e) {
+                // Ignore parsing errors
+            }
+        }
+
+        if (request.getSalesNotification() != null) {
+            customer.setSalesNotification(request.getSalesNotification());
+        }
+        if (request.getNewArrivalsNotification() != null) {
+            customer.setNewArrivalsNotification(request.getNewArrivalsNotification());
+        }
+        if (request.getDeliveryStatusNotification() != null) {
+            customer.setDeliveryStatusNotification(request.getDeliveryStatusNotification());
+        }
+
+        customer.setUpdatedAt(java.time.OffsetDateTime.now());
+        customerRepository.save(customer);
+
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/profile-stats")
     public ResponseEntity<UserProfileStatsResponse> getProfileStats(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getUser().getId();
-        long orders = orderRepository.countByUserId(userId);
-        long addresses = addressRepository.countByUserId(userId);
-        long coupons = couponRepository.countByUserId(userId);
+        long orders = orderRepository.countByCustomerUserId(userId);
+        long addresses = addressRepository.countByCustomerUserId(userId);
+        long coupons = couponRepository.count();
         long reviews = reviewRepository.countByUserId(userId);
 
-        java.util.List<Card> cards = cardRepository.findByUserId(userId);
+        java.util.List<Card> cards = cardRepository.findByCustomerUserId(userId);
         String cardSummary = "No payment methods";
         if (!cards.isEmpty()) {
             Card primary = cards.get(0);
@@ -65,29 +148,86 @@ public class UserController {
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<Order> createOrder(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUser().getId();
-        OrderStatus defaultStatus = orderStatusRepository.findAll().stream().findFirst()
+    public ResponseEntity<Order> createOrder(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody OrderCreateRequest request
+    ) {
+        User user = userDetails.getUser();
+        Customer customer = getOrCreateCustomer(user);
+        
+        OrderStatus defaultStatus = orderStatusRepository.findAll().stream()
+                .filter(s -> s.getStatusName().equalsIgnoreCase("Processing"))
+                .findFirst()
                 .orElseGet(() -> orderStatusRepository.save(OrderStatus.builder()
                         .statusName("Processing")
                         .color("#FFC107")
                         .createdAt(java.time.OffsetDateTime.now())
                         .updatedAt(java.time.OffsetDateTime.now())
                         .build()));
-        java.util.UUID statusId = defaultStatus.getId();
 
         Order order = Order.builder()
-                .userId(userId)
+                .customer(customer)
                 .createdAt(java.time.OffsetDateTime.now())
-                .orderStatusId(statusId)
+                .orderStatus(defaultStatus)
+                .totalAmount(request.getTotalAmount())
+                .shippingAddress(request.getShippingAddress())
+                .deliveryMethod(request.getDeliveryMethod())
+                .paymentMethod(request.getPaymentMethod())
+                .discount(request.getDiscount())
                 .build();
+
+        List<OrderItem> items = new java.util.ArrayList<>();
+        if (request.getItems() != null) {
+            for (OrderItemRequest itemReq : request.getItems()) {
+                Product product = productRepository.findById(itemReq.getProductId())
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
+                
+                items.add(OrderItem.builder()
+                        .order(order)
+                        .product(product)
+                        .quantity(itemReq.getQuantity())
+                        .price(itemReq.getPrice())
+                        .selectedSize(itemReq.getSelectedSize())
+                        .selectedColor(itemReq.getSelectedColor())
+                        .build());
+            }
+        }
+        order.setItems(items);
+
         Order saved = orderRepository.save(order);
+        return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping("/cards")
+    public ResponseEntity<List<Card>> getMyCards(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User user = userDetails.getUser();
+        Customer customer = getOrCreateCustomer(user);
+        List<Card> cards = cardRepository.findByCustomerUserId(user.getId());
+        return ResponseEntity.ok(cards);
+    }
+
+    @PostMapping("/cards")
+    public ResponseEntity<Card> addCard(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody CardRequest request
+    ) {
+        User user = userDetails.getUser();
+        Customer customer = getOrCreateCustomer(user);
+
+        Card card = Card.builder()
+                .customer(customer)
+                .cardType(request.getCardType())
+                .lastFour(request.getLastFour())
+                .build();
+
+        Card saved = cardRepository.save(card);
         return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/simulate/order")
     public ResponseEntity<Void> simulateOrder(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUser().getId();
+        User user = userDetails.getUser();
+        Customer customer = getOrCreateCustomer(user);
         OrderStatus defaultStatus = orderStatusRepository.findAll().stream().findFirst()
                 .orElseGet(() -> orderStatusRepository.save(OrderStatus.builder()
                         .statusName("Delivered")
@@ -95,22 +235,22 @@ public class UserController {
                         .createdAt(java.time.OffsetDateTime.now())
                         .updatedAt(java.time.OffsetDateTime.now())
                         .build()));
-        java.util.UUID statusId = defaultStatus.getId();
 
         orderRepository.save(Order.builder()
-                .userId(userId)
+                .customer(customer)
                 .createdAt(java.time.OffsetDateTime.now())
-                .orderStatusId(statusId)
+                .orderStatus(defaultStatus)
                 .build());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/simulate/address")
     public ResponseEntity<Void> simulateAddress(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUser().getId();
+        User user = userDetails.getUser();
+        Customer customer = getOrCreateCustomer(user);
         addressRepository.save(CustomerAddress.builder()
-                .userId(userId)
-                .addressLine1("Simulation Address " + (addressRepository.countByUserId(userId) + 1))
+                .customer(customer)
+                .addressLine1("Simulation Address " + (addressRepository.countByCustomerUserId(user.getId()) + 1))
                 .city("Hanoi")
                 .country("Vietnam")
                 .postalCode("10000")
@@ -122,9 +262,10 @@ public class UserController {
 
     @PostMapping("/simulate/card")
     public ResponseEntity<Void> simulateCard(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUser().getId();
+        User user = userDetails.getUser();
+        Customer customer = getOrCreateCustomer(user);
         cardRepository.save(Card.builder()
-                .userId(userId)
+                .customer(customer)
                 .cardType("Mastercard")
                 .lastFour("99")
                 .build());
@@ -133,23 +274,25 @@ public class UserController {
 
     @PostMapping("/simulate/review")
     public ResponseEntity<Void> simulateReview(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUser().getId();
-        reviewRepository.save(Review.builder()
-                .userId(userId)
-                .productId(java.util.UUID.randomUUID())
-                .content("Giao hang cuc ky nhanh, rat hai long!")
-                .rating(5)
-                .createdAt(java.time.OffsetDateTime.now())
-                .build());
+        User user = userDetails.getUser();
+        java.util.List<Product> products = productRepository.findAll();
+        Product product = products.isEmpty() ? null : products.get(0);
+        if (product != null) {
+            reviewRepository.save(Review.builder()
+                    .user(user)
+                    .product(product)
+                    .content("Giao hang cuc ky nhanh, rat hai long!")
+                    .rating(5)
+                    .createdAt(java.time.OffsetDateTime.now())
+                    .build());
+        }
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/simulate/coupon")
-    public ResponseEntity<Void> simulateCoupon(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUser().getId();
+    public ResponseEntity<Void> simulateCoupon() {
         couponRepository.save(Coupon.builder()
-                .userId(userId)
-                .code("SIMULATE" + (couponRepository.countByUserId(userId) + 1))
+                .code("SIMULATE" + (couponRepository.count() + 1))
                 .discountType("PERCENTAGE")
                 .discountValue(15.0)
                 .timesUsed(0.0)

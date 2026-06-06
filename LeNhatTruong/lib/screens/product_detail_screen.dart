@@ -354,6 +354,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 MaterialPageRoute(
                                   builder: (context) => RatingReviewsScreen(
                                     productName: widget.product.productName,
+                                    productId: widget.product.id,
                                   ),
                                 ),
                               );

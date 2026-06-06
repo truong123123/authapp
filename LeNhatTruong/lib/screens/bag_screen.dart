@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/favorites_provider.dart';
 import '../utils/constants.dart';
-import 'product_detail_screen.dart';
 import 'checkout_screen.dart';
 
 class BagScreen extends StatefulWidget {

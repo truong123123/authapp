@@ -16,8 +16,8 @@ Future<String> authenticateWithPopup({
 
   final left = (web.window.screen.width - width) ~/ 2;
   final top = (web.window.screen.height - height) ~/ 3;
-  final popup = web.window.open(url, 'social_auth',
-      'width=$width,height=$height,left=$left,top=$top');
+  final popup = web.window.open(
+      url, 'social_auth', 'width=$width,height=$height,left=$left,top=$top');
 
   debugPrint('[SocialAuth] Popup opened, waiting for postMessage...');
   debugPrint('[SocialAuth] Flutter origin: ${web.window.origin}');
@@ -46,7 +46,8 @@ Future<String> authenticateWithPopup({
         }
       }
     } else {
-      debugPrint('[SocialAuth] Ignored message from disallowed origin: $eventOrigin');
+      debugPrint(
+          '[SocialAuth] Ignored message from disallowed origin: $eventOrigin');
     }
   });
 

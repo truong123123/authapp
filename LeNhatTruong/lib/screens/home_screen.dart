@@ -215,7 +215,8 @@ class _HomeScreenState extends State<HomeScreen>
                         const SizedBox(height: 24),
 
                         // Profile card
-                        _buildProfileCard(initials, user?.name, user?.email, user?.avatarUrl),
+                        _buildProfileCard(
+                            initials, user?.name, user?.email, user?.avatarUrl),
                         const SizedBox(height: 28),
 
                         // Section title
@@ -345,8 +346,7 @@ class _HomeScreenState extends State<HomeScreen>
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.circle,
-                          color: AppTheme.success, size: 8),
+                      Icon(Icons.circle, color: AppTheme.success, size: 8),
                       SizedBox(width: 6),
                       Text(
                         'Đã xác thực',
@@ -450,8 +450,8 @@ class _HomeScreenState extends State<HomeScreen>
               _buildStatusBadge(
                   Icons.token_outlined, 'JWT Active', AppTheme.secondary),
               const SizedBox(width: 12),
-              _buildStatusBadge(Icons.security_rounded, 'Bảo mật',
-                  AppTheme.primary),
+              _buildStatusBadge(
+                  Icons.security_rounded, 'Bảo mật', AppTheme.primary),
             ],
           ),
         ],
@@ -462,8 +462,7 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildStatusBadge(IconData icon, String label, Color color) {
     return Expanded(
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
@@ -496,8 +495,8 @@ class _HomeScreenState extends State<HomeScreen>
         decoration: BoxDecoration(
           color: AppTheme.error.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border:
-              Border.all(color: AppTheme.error.withValues(alpha: 0.3), width: 1),
+          border: Border.all(
+              color: AppTheme.error.withValues(alpha: 0.3), width: 1),
         ),
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -19,6 +19,7 @@ import 'order_details_screen.dart';
 import 'settings_screen.dart';
 import 'filters_screen.dart';
 import 'admin_product_screen.dart';
+import 'collections_screen.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -29,6 +30,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentIndex = 0;
+  String _homeView = 'main'; // 'main' or 'collections'
   int _selectedGenderIndex = 0;
   String _currentShopView = 'main'; // 'main' or 'sub_clothes'
   final _productService = ProductService();
@@ -207,7 +209,9 @@ class _MainPageState extends State<MainPage> {
                   child: IndexedStack(
                     index: _currentIndex,
                     children: [
-                      _buildShopTab(scale: scale, bannerH: bannerH, cardW: cardW, cardH: cardH),
+                      _homeView == 'main'
+                          ? _buildShopTab(scale: scale, bannerH: bannerH, cardW: cardW, cardH: cardH)
+                          : CollectionsScreen(scale: scale),
                       _buildCategoriesTab(scale: scale),
                       const BagScreen(),
                       const FavoritesScreen(),
@@ -223,6 +227,9 @@ class _MainPageState extends State<MainPage> {
             selectedIndex: _currentIndex,
             onTap: (i) {
               setState(() {
+                if (i == 0 && _currentIndex == 0) {
+                  _homeView = 'main';
+                }
                 _currentIndex = i;
               });
               if (i == 0 || i == 1) {
@@ -258,7 +265,15 @@ class _MainPageState extends State<MainPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Slide/Banner
-            _BigBanner(height: bannerH, scale: scale),
+            _BigBanner(
+              height: bannerH,
+              scale: scale,
+              onCheckPressed: () {
+                setState(() {
+                  _homeView = 'collections';
+                });
+              },
+            ),
 
             // Section 1: Sale
             if (_saleProducts.isNotEmpty) ...[
@@ -1987,7 +2002,14 @@ class _ProfileTabState extends State<_ProfileTab> {
 class _BigBanner extends StatefulWidget {
   final double height;
   final double scale;
-  const _BigBanner({super.key, required this.height, required this.scale});
+  final VoidCallback? onCheckPressed;
+  
+  const _BigBanner({
+    super.key,
+    required this.height,
+    required this.scale,
+    this.onCheckPressed,
+  });
 
   @override
   State<_BigBanner> createState() => _BigBannerState();
@@ -2103,7 +2125,7 @@ class _BigBannerState extends State<_BigBanner> {
               width: 140 * widget.scale,
               height: 36 * widget.scale,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: widget.onCheckPressed,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFDB3022),
                   shape: RoundedRectangleBorder(

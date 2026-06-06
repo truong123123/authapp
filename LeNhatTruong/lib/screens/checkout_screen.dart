@@ -16,9 +16,49 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedDeliveryIndex = 0; // 0: FedEx, 1: USPS, 2: DHL
   String _shippingName = 'Jane Doe';
-  String _shippingAddress = '3 Newbridge Court\nChino Hills, CA 91709, United States';
+  String _shippingAddress =
+      '3 Newbridge Court\nChino Hills, CA 91709, United States';
   String _cardNumber = '3947';
   String _cardType = 'MasterCard';
+  List<Map<String, dynamic>> _userCards = [];
+  bool _loadingCards = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserCards();
+  }
+
+  Future<void> _loadUserCards() async {
+    setState(() {
+      _loadingCards = true;
+    });
+    try {
+      final cards = await AuthService().getUserCards();
+      setState(() {
+        _userCards = cards;
+        if (_userCards.isNotEmpty) {
+          bool found = false;
+          for (var c in _userCards) {
+            if (c['lastFour'] == _cardNumber && c['cardType'] == _cardType) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            _cardType = _userCards.first['cardType'] ?? 'MasterCard';
+            _cardNumber = _userCards.first['lastFour'] ?? '3947';
+          }
+        }
+      });
+    } catch (e) {
+      print('>>> Error loading user cards: $e');
+    } finally {
+      setState(() {
+        _loadingCards = false;
+      });
+    }
+  }
 
   void _showEditAddressBottomSheet(BuildContext context, double scale) {
     final nameController = TextEditingController(text: _shippingName);
@@ -72,7 +112,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   controller: nameController,
                   decoration: InputDecoration(
                     labelText: 'Full Name',
-                    labelStyle: GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
+                    labelStyle:
+                        GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -91,7 +132,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   maxLines: 3,
                   decoration: InputDecoration(
                     labelText: 'Address Details',
-                    labelStyle: GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
+                    labelStyle:
+                        GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -145,8 +187,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _showEditPaymentBottomSheet(BuildContext context, double scale) {
-    final cardController = TextEditingController(text: '**** **** **** $_cardNumber');
-    String selectedCardType = _cardType;
+    final cardController = TextEditingController();
+    String selectedCardType = 'MasterCard';
+    bool isAddingNewCard = _userCards.isEmpty;
 
     showModalBottomSheet(
       context: context,
@@ -186,160 +229,285 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                     SizedBox(height: 24 * scale),
                     Text(
-                      'Edit Payment Method',
+                      'Payment Method',
                       style: GoogleFonts.outfit(
                         fontSize: 20 * scale,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF222222),
                       ),
                     ),
-                    SizedBox(height: 20 * scale),
-                    Text(
-                      'Card Type',
-                      style: GoogleFonts.inter(
-                        fontSize: 12 * scale,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF9B9B9B),
+                    SizedBox(height: 16 * scale),
+
+                    if (_userCards.isNotEmpty) ...[
+                      Text(
+                        'Your Cards',
+                        style: GoogleFonts.inter(
+                          fontSize: 12 * scale,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF9B9B9B),
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 8 * scale),
+                      SizedBox(height: 10 * scale),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _userCards.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 12 * scale),
+                        itemBuilder: (context, index) {
+                          final card = _userCards[index];
+                          final cardTypeStr = card['cardType'] ?? 'Visa';
+                          final lastFourStr = card['lastFour'] ?? '00';
+                          final isSelected = (_cardType.toLowerCase() == cardTypeStr.toString().toLowerCase() &&
+                                              _cardNumber == lastFourStr);
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                _cardType = cardTypeStr;
+                                _cardNumber = lastFourStr;
+                              });
+                              Navigator.pop(ctx);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(12 * scale),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8 * scale),
+                                border: Border.all(
+                                  color: isSelected ? const Color(0xFFDB3022) : Colors.transparent,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  _CardLogo(cardType: cardTypeStr, scale: scale),
+                                  SizedBox(width: 16 * scale),
+                                  Expanded(
+                                    child: Text(
+                                      '**** **** **** $lastFourStr',
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14 * scale,
+                                        color: const Color(0xFF222222),
+                                      ),
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    const Icon(Icons.check_circle, color: Color(0xFF2AA95C))
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: 16 * scale),
+                    ],
+
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              setModalState(() {
-                                selectedCardType = 'MasterCard';
-                              });
-                            },
-                            child: Container(
-                              padding: EdgeInsets.all(12 * scale),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8 * scale),
-                                border: Border.all(
-                                  color: selectedCardType == 'MasterCard'
-                                      ? const Color(0xFFDB3022)
-                                      : Colors.transparent,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  _CardLogo(cardType: 'MasterCard', scale: scale),
-                                  SizedBox(width: 12 * scale),
-                                  Text(
-                                    'MasterCard',
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14 * scale,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                        Text(
+                          isAddingNewCard ? 'Add New Card' : 'Or add another method',
+                          style: GoogleFonts.inter(
+                            fontSize: 12 * scale,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF9B9B9B),
                           ),
                         ),
-                        SizedBox(width: 12 * scale),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () {
+                        if (_userCards.isNotEmpty)
+                          TextButton(
+                            onPressed: () {
                               setModalState(() {
-                                selectedCardType = 'Visa';
+                                isAddingNewCard = !isAddingNewCard;
                               });
                             },
-                            child: Container(
-                              padding: EdgeInsets.all(12 * scale),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8 * scale),
-                                border: Border.all(
-                                  color: selectedCardType == 'Visa'
-                                      ? const Color(0xFFDB3022)
-                                      : Colors.transparent,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  _CardLogo(cardType: 'Visa', scale: scale),
-                                  SizedBox(width: 12 * scale),
-                                  Text(
-                                    'Visa',
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14 * scale,
-                                    ),
-                                  ),
-                                ],
+                            child: Text(
+                              isAddingNewCard ? 'Show saved cards' : 'Add Card',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFDB3022),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13 * scale,
                               ),
                             ),
-                          ),
-                        ),
+                          )
                       ],
                     ),
-                    SizedBox(height: 20 * scale),
-                    TextField(
-                      controller: cardController,
-                      keyboardType: TextInputType.number,
-                      onTap: () {
-                        if (cardController.text.startsWith('****')) {
-                          cardController.clear();
-                        }
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Card Number',
-                        labelStyle: GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8 * scale),
-                          borderSide: BorderSide.none,
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8 * scale),
-                          borderSide: const BorderSide(color: Color(0xFFDB3022)),
+                    SizedBox(height: 10 * scale),
+
+                    if (isAddingNewCard) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  selectedCardType = 'MasterCard';
+                                });
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(12 * scale),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8 * scale),
+                                  border: Border.all(
+                                    color: selectedCardType == 'MasterCard'
+                                        ? const Color(0xFFDB3022)
+                                        : Colors.transparent,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    _CardLogo(cardType: 'MasterCard', scale: scale),
+                                    SizedBox(width: 12 * scale),
+                                    Text(
+                                      'MasterCard',
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14 * scale,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12 * scale),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setModalState(() {
+                                  selectedCardType = 'Visa';
+                                });
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(12 * scale),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8 * scale),
+                                  border: Border.all(
+                                    color: selectedCardType == 'Visa'
+                                        ? const Color(0xFFDB3022)
+                                        : Colors.transparent,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    _CardLogo(cardType: 'Visa', scale: scale),
+                                    SizedBox(width: 12 * scale),
+                                    Text(
+                                      'Visa',
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14 * scale,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20 * scale),
+                      TextField(
+                        controller: cardController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Card Number',
+                          labelStyle: GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8 * scale),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8 * scale),
+                            borderSide: const BorderSide(color: Color(0xFFDB3022)),
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 24 * scale),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48 * scale,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          String numStr = cardController.text.trim();
-                          String digits = _cardNumber;
-                          if (numStr.isNotEmpty && !numStr.startsWith('****')) {
+                      SizedBox(height: 24 * scale),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48 * scale,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            String numStr = cardController.text.trim();
+                            if (numStr.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Vui lòng nhập số thẻ'),
+                                  backgroundColor: Color(0xFFDB3022),
+                                ),
+                              );
+                              return;
+                            }
+                            String digits = '00';
                             if (numStr.length >= 4) {
                               digits = numStr.substring(numStr.length - 4);
                             } else {
                               digits = numStr;
                             }
-                          }
-                          setState(() {
-                            _cardNumber = digits;
-                            _cardType = selectedCardType;
-                          });
-                          Navigator.pop(ctx);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFDB3022),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24 * scale),
+
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (ctx) => const Center(
+                                child: CircularProgressIndicator(color: Color(0xFFDB3022)),
+                              ),
+                            );
+
+                            try {
+                              final authService = AuthService();
+                              await authService.addUserCard(selectedCardType, digits);
+                              
+                              await _loadUserCards();
+
+                              Navigator.pop(context);
+                              Navigator.pop(ctx);
+                              
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Đã thêm thẻ thành công!'),
+                                  backgroundColor: Color(0xFF2AA95C),
+                                ),
+                              );
+                            } catch (e) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Lỗi thêm thẻ: $e'),
+                                  backgroundColor: const Color(0xFFDB3022),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFDB3022),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24 * scale),
+                            ),
+                            elevation: 0,
                           ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'SAVE PAYMENT',
-                          style: GoogleFonts.inter(
-                            fontSize: 14 * scale,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                          child: Text(
+                            'SAVE PAYMENT',
+                            style: GoogleFonts.inter(
+                              fontSize: 14 * scale,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -364,7 +532,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 20 * scale),
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: const Color(0xFF222222), size: 20 * scale),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -424,7 +593,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () => _showEditAddressBottomSheet(context, scale),
+                                onTap: () =>
+                                    _showEditAddressBottomSheet(context, scale),
                                 child: Text(
                                   'Change',
                                   style: GoogleFonts.inter(
@@ -464,7 +634,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => _showEditPaymentBottomSheet(context, scale),
+                          onTap: () =>
+                              _showEditPaymentBottomSheet(context, scale),
                           child: Text(
                             'Change',
                             style: GoogleFonts.inter(
@@ -511,13 +682,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           logoWidget: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('Fed', style: GoogleFonts.outfit(color: const Color(0xFF4D148C), fontWeight: FontWeight.w900, fontSize: 16 * scale)),
-                              Text('Ex', style: GoogleFonts.outfit(color: const Color(0xFFFF6600), fontWeight: FontWeight.w900, fontSize: 16 * scale)),
+                              Text('Fed',
+                                  style: GoogleFonts.outfit(
+                                      color: const Color(0xFF4D148C),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16 * scale)),
+                              Text('Ex',
+                                  style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFF6600),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16 * scale)),
                             ],
                           ),
                           duration: '2-3 days',
                           isSelected: _selectedDeliveryIndex == 0,
-                          onTap: () => setState(() => _selectedDeliveryIndex = 0),
+                          onTap: () =>
+                              setState(() => _selectedDeliveryIndex = 0),
                           scale: scale,
                         ),
                         _DeliveryCard(
@@ -535,7 +715,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                           duration: '2-3 days',
                           isSelected: _selectedDeliveryIndex == 1,
-                          onTap: () => setState(() => _selectedDeliveryIndex = 1),
+                          onTap: () =>
+                              setState(() => _selectedDeliveryIndex = 1),
                           scale: scale,
                         ),
                         _DeliveryCard(
@@ -555,7 +736,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                           duration: '2-3 days',
                           isSelected: _selectedDeliveryIndex == 2,
-                          onTap: () => setState(() => _selectedDeliveryIndex = 2),
+                          onTap: () =>
+                              setState(() => _selectedDeliveryIndex = 2),
                           scale: scale,
                         ),
                       ],
@@ -590,7 +772,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
             // Submit Button Area
             Container(
-              padding: EdgeInsets.fromLTRB(16 * scale, 12 * scale, 16 * scale, 24 * scale),
+              padding: EdgeInsets.fromLTRB(
+                  16 * scale, 12 * scale, 16 * scale, 24 * scale),
               decoration: const BoxDecoration(
                 color: Colors.white,
               ),
@@ -598,34 +781,58 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 width: double.infinity,
                 height: 48 * scale,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    // Show a loading indicator dialog
+                  onPressed: cartProvider.items.isEmpty ? null : () async {
                     showDialog(
                       context: context,
                       barrierDismissible: false,
                       builder: (ctx) => const Center(
-                        child: CircularProgressIndicator(color: Color(0xFFDB3022)),
+                        child:
+                            CircularProgressIndicator(color: Color(0xFFDB3022)),
                       ),
                     );
 
                     try {
-                      final authService = AuthService();
-                      await authService.createRealOrder();
+                      final List<Map<String, dynamic>> orderItems = cartProvider.items.map((item) {
+                        return {
+                          'productId': item.product.id,
+                          'quantity': item.quantity,
+                          'selectedSize': item.selectedSize,
+                          'selectedColor': item.selectedColor,
+                          'price': item.product.salePrice,
+                        };
+                      }).toList();
 
-                      // Pop loading indicator
+                      String deliveryMethodStr = 'FedEx';
+                      if (_selectedDeliveryIndex == 1) {
+                        deliveryMethodStr = 'USPS';
+                      } else if (_selectedDeliveryIndex == 2) {
+                        deliveryMethodStr = 'DHL';
+                      }
+
+                      final orderPayload = {
+                        'totalAmount': summaryAmount,
+                        'shippingAddress': _shippingAddress,
+                        'deliveryMethod': deliveryMethodStr,
+                        'paymentMethod': '$_cardType **** $_cardNumber',
+                        'discount': cartProvider.discountAmount,
+                        'items': orderItems,
+                      };
+
+                      final authService = AuthService();
+                      await authService.createRealOrder(orderPayload);
+
                       Navigator.pop(context);
 
-                      // Navigate to Success Screen
                       cartProvider.clearCart();
                       final isYellow = Random().nextBool();
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => OrderSuccessScreen(isYellow: isYellow),
+                          builder: (_) =>
+                              OrderSuccessScreen(isYellow: isYellow),
                         ),
                       );
                     } catch (e) {
-                      // Pop loading indicator
                       Navigator.pop(context);
 
                       ScaffoldMessenger.of(context).showSnackBar(

@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "order_items")
 @Data
@@ -16,17 +18,25 @@ public class OrderItem {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
-    @Column(name = "product_id")
-    private java.util.UUID productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    @Column(name = "order_id")
-    private String orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private Order order;
 
     @Column(nullable = false)
     private Double price;
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(name = "selected_size")
+    private String selectedSize;
+
+    @Column(name = "selected_color")
+    private String selectedColor;
 }

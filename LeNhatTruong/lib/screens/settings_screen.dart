@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/auth_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -23,23 +24,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _salesNotification = true;
   bool _newArrivalsNotification = false;
   bool _deliveryStatusNotification = false;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _dobController = TextEditingController(text: '12/12/1989');
+    _dobController = TextEditingController();
     _passwordController = TextEditingController(text: 'password123456');
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final auth = context.read<AuthProvider>();
-    if (auth.user != null) {
-      _nameController.text = auth.user!.name;
-    } else {
-      _nameController.text = 'Matilda Brown';
+    if (!_initialized) {
+      final auth = context.read<AuthProvider>();
+      if (auth.user != null) {
+        _nameController.text = auth.user!.name;
+        _dobController.text = auth.user!.dateOfBirth ?? '1989-12-12';
+        _salesNotification = auth.user!.salesNotification;
+        _newArrivalsNotification = auth.user!.newArrivalsNotification;
+        _deliveryStatusNotification = auth.user!.deliveryStatusNotification;
+      } else {
+        _nameController.text = 'Matilda Brown';
+        _dobController.text = '1989-12-12';
+        _salesNotification = true;
+        _newArrivalsNotification = false;
+        _deliveryStatusNotification = false;
+      }
+      _initialized = true;
     }
   }
 
@@ -234,8 +247,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fontWeight: FontWeight.w500,
           ),
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           contentPadding: EdgeInsets.zero,
+          filled: false,
+          fillColor: Colors.transparent,
         ),
       ),
     );
@@ -261,7 +281,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: const Color(0xFF222222),
                     size: 18 * scale,
                   ),
-                  onPressed: widget.onBack,
+                  onPressed: () async {
+                    try {
+                      final authService = AuthService();
+                      await authService.updateProfile(
+                        name: _nameController.text.trim(),
+                        dateOfBirth: _dobController.text.trim(),
+                        sales: _salesNotification,
+                        newArrivals: _newArrivalsNotification,
+                        deliveryStatus: _deliveryStatusNotification,
+                      );
+                      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                      await authProvider.checkAuthStatus();
+                    } catch (e) {
+                      print('>>> Error updating settings profile: $e');
+                    }
+                    widget.onBack();
+                  },
                 ),
                 IconButton(
                   icon: Icon(
@@ -442,8 +478,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             fontWeight: FontWeight.w500,
           ),
           border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
           floatingLabelBehavior: FloatingLabelBehavior.auto,
           contentPadding: EdgeInsets.zero,
+          filled: false,
+          fillColor: Colors.transparent,
         ),
       ),
     );

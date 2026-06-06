@@ -69,13 +69,15 @@ class Product {
       ratingAverage: (json['ratingAverage'] as num?)?.toDouble(),
       reviewCount: json['reviewCount'],
       note: json['note'],
-      tags: (json['tags'] as List?)
-              ?.map((item) => Tag.fromJson(item))
-              .toList() ??
-          [],
+      tags:
+          (json['tags'] as List?)?.map((item) => Tag.fromJson(item)).toList() ??
+              [],
       sizes: (json['sizes'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      colors: (json['colors'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      categoryIds: (json['categoryIds'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      colors:
+          (json['colors'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      categoryIds:
+          (json['categoryIds'] as List?)?.map((e) => e.toString()).toList() ??
+              [],
     );
   }
 

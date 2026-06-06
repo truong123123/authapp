@@ -6,7 +6,6 @@ import '../models/user_response.dart';
 import '../utils/constants.dart';
 
 class AuthService {
-
   // ───────────── Token helpers ─────────────
 
   Future<String?> getAccessToken() async {
@@ -111,7 +110,7 @@ class AuthService {
     }
   }
 
-  Future<void> createRealOrder() async {
+  Future<void> createRealOrder(Map<String, dynamic> orderPayload) async {
     final token = await getAccessToken();
     final response = await http.post(
       Uri.parse('${AppConstants.baseUrl}/api/users/orders'),
@@ -119,9 +118,72 @@ class AuthService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
+      body: jsonEncode(orderPayload),
     );
     if (response.statusCode != 200) {
       throw Exception('Không thể tạo đơn hàng trên server');
+    }
+  }
+
+  Future<void> updateProfile({
+    required String name,
+    required String dateOfBirth,
+    required bool sales,
+    required bool newArrivals,
+    required bool deliveryStatus,
+  }) async {
+    final token = await getAccessToken();
+    final response = await http.put(
+      Uri.parse('${AppConstants.baseUrl}/api/users/profile'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'name': name,
+        'dateOfBirth': dateOfBirth,
+        'salesNotification': sales,
+        'newArrivalsNotification': newArrivals,
+        'deliveryStatusNotification': deliveryStatus,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Cập nhật thông tin cá nhân thất bại');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getUserCards() async {
+    final token = await getAccessToken();
+    final response = await http.get(
+      Uri.parse('${AppConstants.baseUrl}/api/users/cards'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
+      return List<Map<String, dynamic>>.from(data);
+    } else {
+      return [];
+    }
+  }
+
+  Future<void> addUserCard(String cardType, String lastFour) async {
+    final token = await getAccessToken();
+    final response = await http.post(
+      Uri.parse('${AppConstants.baseUrl}/api/users/cards'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'cardType': cardType,
+        'lastFour': lastFour,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Không thể thêm thẻ thanh toán');
     }
   }
 

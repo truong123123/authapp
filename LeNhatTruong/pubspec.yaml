@@ -28,7 +28,4 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/gg.png
-    - assets/images/fb.png
-    - assets/images/success_bg.png
-    - assets/images/jang_wonyoung.jpg
+    - assets/images/

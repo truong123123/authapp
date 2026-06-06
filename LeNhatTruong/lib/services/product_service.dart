@@ -1,10 +1,34 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/product.dart';
 import '../models/category.dart';
 import '../utils/constants.dart';
 
+import '../models/rating_summary.dart';
+
 class ProductService {
+  Future<RatingSummary?> getRatingSummary(String productId) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            '${AppConstants.baseUrl}/api/reviews/product/$productId/summary'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> body =
+            jsonDecode(utf8.decode(response.bodyBytes));
+        return RatingSummary.fromJson(body);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('>>> Error getting rating summary: $e');
+      return null;
+    }
+  }
+
   Future<List<Product>> getSaleProducts() async {
     try {
       final response = await http.get(
@@ -163,6 +187,52 @@ class ProductService {
     );
     if (response.statusCode != 200) {
       throw Exception('Xóa sản phẩm thất bại');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getProductReviews(String productId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${AppConstants.baseUrl}/api/reviews/product/$productId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> body = jsonDecode(utf8.decode(response.bodyBytes));
+        return List<Map<String, dynamic>>.from(body);
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print('>>> Error getting product reviews: $e');
+      return [];
+    }
+  }
+
+  Future<bool> createReview(String productId, int rating, String content) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(AppConstants.accessTokenKey);
+      if (token == null) {
+        throw Exception('Not authenticated');
+      }
+
+      final response = await http.post(
+        Uri.parse('${AppConstants.baseUrl}/api/reviews/product/$productId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'rating': rating,
+          'content': content,
+        }),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('>>> Error creating review: $e');
+      return false;
     }
   }
 }

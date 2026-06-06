@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../services/order_service.dart';
 
 class OrderProductItem {
   final String title;
@@ -9,6 +10,7 @@ class OrderProductItem {
   final int units;
   final int price;
   final String imageUrl;
+  final String productId;
 
   OrderProductItem({
     required this.title,
@@ -18,7 +20,21 @@ class OrderProductItem {
     required this.units,
     required this.price,
     required this.imageUrl,
+    this.productId = '3fa85f64-5717-4562-b3fc-2c963f66afa6', // dummy default
   });
+
+  factory OrderProductItem.fromJson(Map<String, dynamic> json) {
+    return OrderProductItem(
+      title: json['title'] ?? '',
+      brand: json['brand'] ?? '',
+      color: json['color'] ?? '',
+      size: json['size'] ?? '',
+      units: json['units'] ?? 0,
+      price: json['price'] ?? 0,
+      imageUrl: json['imageUrl'] ?? '',
+      productId: json['productId'] ?? '',
+    );
+  }
 }
 
 class OrderItemData {
@@ -49,6 +65,26 @@ class OrderItemData {
     required this.discount,
     required this.items,
   });
+
+  factory OrderItemData.fromJson(Map<String, dynamic> json) {
+    return OrderItemData(
+      orderNo: json['orderNo'] ?? '',
+      date: json['date'] ?? '',
+      trackingNumber: json['trackingNumber'] ?? '',
+      quantity: json['quantity'] ?? 0,
+      totalAmount: json['totalAmount'] ?? 0,
+      status: json['status'] ?? '',
+      shippingAddress: json['shippingAddress'] ?? '',
+      paymentMethodCardNumber: json['paymentMethodCardNumber'] ?? '',
+      paymentMethodType: json['paymentMethodType'] ?? '',
+      deliveryMethod: json['deliveryMethod'] ?? '',
+      discount: json['discount'] ?? '',
+      items: (json['items'] as List<dynamic>?)
+              ?.map((item) => OrderProductItem.fromJson(item))
+              .toList() ??
+          [],
+    );
+  }
 }
 
 class MyOrdersScreen extends StatefulWidget {
@@ -63,179 +99,43 @@ class MyOrdersScreen extends StatefulWidget {
 
 class _MyOrdersScreenState extends State<MyOrdersScreen> {
   String _selectedTab = 'Delivered';
+  bool _isLoading = true;
+  List<OrderItemData> _allOrders = [];
 
-  // Mock data representing realistic orders
-  final List<OrderItemData> _allOrders = [
-    OrderItemData(
-      orderNo: 'Order №1947034',
-      date: '05-12-2019',
-      trackingNumber: 'IW3475453455',
-      quantity: 3,
-      totalAmount: 133,
-      status: 'Delivered',
-      shippingAddress: '3 Newbridge Court ,Chino Hills, CA 91709, United States',
-      paymentMethodCardNumber: '**** **** **** 3947',
-      paymentMethodType: 'Mastercard',
-      deliveryMethod: 'FedEx, 3 days, 15\$',
-      discount: '10%, Personal promo code',
-      items: [
-        OrderProductItem(
-          title: 'Pullover',
-          brand: 'Mango',
-          color: 'Gray',
-          size: 'L',
-          units: 1,
-          price: 51,
-          imageUrl: '/images/top1.jpg',
-        ),
-        OrderProductItem(
-          title: 'Pullover',
-          brand: 'Mango',
-          color: 'Gray',
-          size: 'L',
-          units: 1,
-          price: 51,
-          imageUrl: '/images/top2.jpg',
-        ),
-        OrderProductItem(
-          title: 'Pullover',
-          brand: 'Mango',
-          color: 'Gray',
-          size: 'L',
-          units: 1,
-          price: 51,
-          imageUrl: '/images/top3.jpg',
-        ),
-      ],
-    ),
-    OrderItemData(
-      orderNo: 'Order №1947035',
-      date: '05-12-2019',
-      trackingNumber: 'IW3475453455',
-      quantity: 3,
-      totalAmount: 112,
-      status: 'Delivered',
-      shippingAddress: '3 Newbridge Court ,Chino Hills, CA 91709, United States',
-      paymentMethodCardNumber: '**** **** **** 3947',
-      paymentMethodType: 'Mastercard',
-      deliveryMethod: 'FedEx, 3 days, 15\$',
-      discount: '10%, Personal promo code',
-      items: [
-        OrderProductItem(
-          title: 'Pullover',
-          brand: 'Mango',
-          color: 'Gray',
-          size: 'L',
-          units: 1,
-          price: 51,
-          imageUrl: '/images/top1.jpg',
-        ),
-      ],
-    ),
-    OrderItemData(
-      orderNo: 'Order №1947036',
-      date: '05-12-2019',
-      trackingNumber: 'IW3475453455',
-      quantity: 3,
-      totalAmount: 112,
-      status: 'Delivered',
-      shippingAddress: '3 Newbridge Court ,Chino Hills, CA 91709, United States',
-      paymentMethodCardNumber: '**** **** **** 3947',
-      paymentMethodType: 'Mastercard',
-      deliveryMethod: 'FedEx, 3 days, 15\$',
-      discount: '10%, Personal promo code',
-      items: [
-        OrderProductItem(
-          title: 'Pullover',
-          brand: 'Mango',
-          color: 'Gray',
-          size: 'L',
-          units: 1,
-          price: 51,
-          imageUrl: '/images/top1.jpg',
-        ),
-      ],
-    ),
-    OrderItemData(
-      orderNo: 'Order №1947040',
-      date: '06-06-2026',
-      trackingNumber: 'IW3475453501',
-      quantity: 1,
-      totalAmount: 45,
-      status: 'Processing',
-      shippingAddress: '123 Maple Street, Sunnyvale, CA 94086, United States',
-      paymentMethodCardNumber: '**** **** **** 1234',
-      paymentMethodType: 'Visa',
-      deliveryMethod: 'DHL, 2 days, 10\$',
-      discount: 'None',
-      items: [
-        OrderProductItem(
-          title: 'Evening Dress',
-          brand: 'Dorothy Perkins',
-          color: 'Red',
-          size: 'M',
-          units: 1,
-          price: 45,
-          imageUrl: '/images/product1.jpg',
-        ),
-      ],
-    ),
-    OrderItemData(
-      orderNo: 'Order №1947042',
-      date: '06-06-2026',
-      trackingNumber: 'IW3475453520',
-      quantity: 4,
-      totalAmount: 198,
-      status: 'Processing',
-      shippingAddress: '456 Oak Avenue, San Jose, CA 95112, United States',
-      paymentMethodCardNumber: '**** **** **** 5678',
-      paymentMethodType: 'Visa',
-      deliveryMethod: 'FedEx, 3 days, 15\$',
-      discount: '15%, Summer Sale',
-      items: [
-        OrderProductItem(
-          title: 'Sport Dress',
-          brand: 'Sitlly',
-          color: 'Blue',
-          size: 'S',
-          units: 2,
-          price: 99,
-          imageUrl: '/images/product2.jpg',
-        ),
-      ],
-    ),
-    OrderItemData(
-      orderNo: 'Order №1947010',
-      date: '15-11-2019',
-      trackingNumber: 'IW3475453200',
-      quantity: 2,
-      totalAmount: 54,
-      status: 'Cancelled',
-      shippingAddress: '789 Pine Road, Seattle, WA 98101, United States',
-      paymentMethodCardNumber: '**** **** **** 9012',
-      paymentMethodType: 'Mastercard',
-      deliveryMethod: 'USPS, 5 days, 5\$',
-      discount: 'None',
-      items: [
-        OrderProductItem(
-          title: 'Oversize T-Shirt',
-          brand: 'GUCCI',
-          color: 'White',
-          size: 'XL',
-          units: 1,
-          price: 54,
-          imageUrl: '/images/product3.jpg',
-        ),
-      ],
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    try {
+      final orders = await OrderService().getMyOrders();
+      if (mounted) {
+        setState(() {
+          _allOrders = orders;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load orders: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final scale = (MediaQuery.of(context).size.width / 375).clamp(0.5, 1.5);
 
     // Filter orders based on the selected tab
-    final filteredOrders = _allOrders.where((order) => order.status == _selectedTab).toList();
+    final filteredOrders =
+        _allOrders.where((order) => order.status == _selectedTab).toList();
 
     return Container(
       color: const Color(0xFFF9F9F9),
@@ -244,7 +144,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         children: [
           // Custom header bar (Back arrow and Search icon)
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 4 * scale, vertical: 8 * scale),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -276,7 +177,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
 
           // Large Title "My Orders"
           Padding(
-            padding: EdgeInsets.only(left: 16 * scale, right: 16 * scale, bottom: 20 * scale),
+            padding: EdgeInsets.only(
+                left: 16 * scale, right: 16 * scale, bottom: 20 * scale),
             child: Text(
               'My Orders',
               style: GoogleFonts.outfit(
@@ -299,48 +201,54 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
               ],
             ),
           ),
-          
+
           SizedBox(height: 24 * scale),
 
           // Scrollable Order List
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: filteredOrders.isEmpty
-                  ? Center(
-                      key: ValueKey('empty_$_selectedTab'),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.shopping_bag_outlined,
-                            size: 48 * scale,
-                            color: const Color(0xFF9B9B9B),
-                          ),
-                          SizedBox(height: 12 * scale),
-                          Text(
-                            'No orders found',
-                            style: GoogleFonts.inter(
-                              fontSize: 15 * scale,
-                              color: const Color(0xFF9B9B9B),
-                              fontWeight: FontWeight.w500,
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFDB3022)),
+                  )
+                : AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: filteredOrders.isEmpty
+                        ? Center(
+                            key: ValueKey('empty_$_selectedTab'),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.shopping_bag_outlined,
+                                  size: 48 * scale,
+                                  color: const Color(0xFF9B9B9B),
+                                ),
+                                SizedBox(height: 12 * scale),
+                                Text(
+                                  'No orders found',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15 * scale,
+                                    color: const Color(0xFF9B9B9B),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
+                          )
+                        : ListView.builder(
+                            key: ValueKey('list_$_selectedTab'),
+                            padding:
+                                EdgeInsets.symmetric(horizontal: 16 * scale),
+                            itemCount: filteredOrders.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: EdgeInsets.only(bottom: 24 * scale),
+                                child: _buildOrderCard(
+                                    filteredOrders[index], scale),
+                              );
+                            },
                           ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      key: ValueKey('list_$_selectedTab'),
-                      padding: EdgeInsets.symmetric(horizontal: 16 * scale),
-                      itemCount: filteredOrders.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: 24 * scale),
-                          child: _buildOrderCard(filteredOrders[index], scale),
-                        );
-                      },
-                    ),
-            ),
+                  ),
           ),
         ],
       ),
@@ -434,7 +342,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
               ),
             ],
           ),
-          
+
           SizedBox(height: 12 * scale),
 
           // Tracking number row
@@ -523,7 +431,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFF222222),
-                    side: const BorderSide(color: Color(0xFF222222), width: 1.5),
+                    side:
+                        const BorderSide(color: Color(0xFF222222), width: 1.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24 * scale),
                     ),
@@ -538,7 +447,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                   ),
                 ),
               ),
-              
+
               // Status text
               Text(
                 order.status,

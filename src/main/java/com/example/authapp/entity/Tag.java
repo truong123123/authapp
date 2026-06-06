@@ -9,8 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -39,9 +37,11 @@ public class Tag {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
-    @Column(name = "created_by")
-    private UUID createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private StaffAccount createdBy;
 
-    @Column(name = "updated_by")
-    private UUID updatedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private StaffAccount updatedBy;
 }

@@ -41,7 +41,13 @@ class _FiltersScreenState extends State<FiltersScreen> {
   ];
 
   final List<String> _sizeOptions = ['XS', 'S', 'M', 'L', 'XL'];
-  final List<String> _categoryOptions = ['All', 'Women', 'Men', 'Boys', 'Girls'];
+  final List<String> _categoryOptions = [
+    'All',
+    'Women',
+    'Men',
+    'Boys',
+    'Girls'
+  ];
 
   @override
   void initState() {
@@ -82,7 +88,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 20 * scale),
+          icon: Icon(Icons.arrow_back_ios_new,
+              color: const Color(0xFF222222), size: 20 * scale),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
@@ -107,7 +114,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                     _buildSectionHeader('Price range', scale),
                     Container(
                       color: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 16 * scale),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16 * scale, vertical: 16 * scale),
                       child: Column(
                         children: [
                           Row(
@@ -135,8 +143,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                           RangeSlider(
                             values: _priceRange,
                             min: 0,
-                            max: 300,
-                            divisions: 300,
+                            max: 1000,
+                            divisions: 100,
                             activeColor: const Color(0xFFDB3022),
                             inactiveColor: const Color(0xFFBEBEBE),
                             onChanged: (values) {
@@ -153,7 +161,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                     _buildSectionHeader('Colors', scale),
                     Container(
                       color: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 20 * scale),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16 * scale, vertical: 20 * scale),
                       width: double.infinity,
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -178,7 +187,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: isSelected ? const Color(0xFFDB3022) : Colors.transparent,
+                                    color: isSelected
+                                        ? const Color(0xFFDB3022)
+                                        : Colors.transparent,
                                     width: 1.5 * scale,
                                   ),
                                 ),
@@ -189,7 +200,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
                                     shape: BoxShape.circle,
                                     color: color,
                                     border: (name == 'White')
-                                        ? Border.all(color: const Color(0xFFE0E0E0), width: 1)
+                                        ? Border.all(
+                                            color: const Color(0xFFE0E0E0),
+                                            width: 1)
                                         : null,
                                   ),
                                 ),
@@ -204,7 +217,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                     _buildSectionHeader('Sizes', scale),
                     Container(
                       color: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 24 * scale),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16 * scale, vertical: 24 * scale),
                       width: double.infinity,
                       child: Wrap(
                         spacing: 16 * scale,
@@ -226,9 +240,13 @@ class _FiltersScreenState extends State<FiltersScreen> {
                               height: 44 * scale,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFFDB3022) : Colors.white,
+                                color: isSelected
+                                    ? const Color(0xFFDB3022)
+                                    : Colors.white,
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFFDB3022) : const Color(0xFFE0E0E0),
+                                  color: isSelected
+                                      ? const Color(0xFFDB3022)
+                                      : const Color(0xFFE0E0E0),
                                   width: 1 * scale,
                                 ),
                                 borderRadius: BorderRadius.circular(8 * scale),
@@ -238,7 +256,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 14 * scale,
                                   fontWeight: FontWeight.w600,
-                                  color: isSelected ? Colors.white : const Color(0xFF222222),
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF222222),
                                 ),
                               ),
                             ),
@@ -251,7 +271,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                     _buildSectionHeader('Category', scale),
                     Container(
                       color: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 24 * scale),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 16 * scale, vertical: 24 * scale),
                       width: double.infinity,
                       child: Wrap(
                         spacing: 12 * scale,
@@ -265,11 +286,16 @@ class _FiltersScreenState extends State<FiltersScreen> {
                               });
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 12 * scale),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20 * scale, vertical: 12 * scale),
                               decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFFDB3022) : Colors.white,
+                                color: isSelected
+                                    ? const Color(0xFFDB3022)
+                                    : Colors.white,
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFFDB3022) : const Color(0xFFE0E0E0),
+                                  color: isSelected
+                                      ? const Color(0xFFDB3022)
+                                      : const Color(0xFFE0E0E0),
                                   width: 1 * scale,
                                 ),
                                 borderRadius: BorderRadius.circular(8 * scale),
@@ -279,7 +305,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 14 * scale,
                                   fontWeight: FontWeight.w600,
-                                  color: isSelected ? Colors.white : const Color(0xFF222222),
+                                  color: isSelected
+                                      ? Colors.white
+                                      : const Color(0xFF222222),
                                 ),
                               ),
                             ),
@@ -313,7 +341,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                       behavior: HitTestBehavior.opaque,
                       child: Container(
                         color: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 16 * scale),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16 * scale, vertical: 16 * scale),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -344,7 +373,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
                                 ],
                               ),
                             ),
-                            Icon(Icons.chevron_right, color: const Color(0xFF222222), size: 24 * scale),
+                            Icon(Icons.chevron_right,
+                                color: const Color(0xFF222222),
+                                size: 24 * scale),
                           ],
                         ),
                       ),
@@ -357,7 +388,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                 ),
               ),
             ),
-            
+
             // --- Bottom Buttons Area ---
             Container(
               padding: EdgeInsets.all(16 * scale),
@@ -379,7 +410,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
                       child: OutlinedButton(
                         onPressed: _discardFilters,
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF222222), width: 1.5),
+                          side: const BorderSide(
+                              color: Color(0xFF222222), width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24 * scale),
                           ),
@@ -432,7 +464,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
     return Container(
       width: double.infinity,
       color: const Color(0xFFF9F9F9),
-      padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 12 * scale),
+      padding:
+          EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 12 * scale),
       child: Text(
         title,
         style: GoogleFonts.inter(

@@ -3,11 +3,9 @@ package com.example.authapp.service;
 import com.example.authapp.dto.request.ProductCreateRequest;
 import com.example.authapp.dto.request.ProductUpdateRequest;
 import com.example.authapp.entity.Category;
-import com.example.authapp.entity.ProductCategory;
 import com.example.authapp.entity.Product;
 import com.example.authapp.entity.Tag;
 import com.example.authapp.repository.CategoryRepository;
-import com.example.authapp.repository.ProductCategoryRepository;
 import com.example.authapp.repository.ProductRepository;
 import com.example.authapp.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,26 +25,9 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final TagRepository tagRepository;
     private final CategoryRepository categoryRepository;
-    private final ProductCategoryRepository productCategoryRepository;
-
-    private void populateCategoryIds(Product product) {
-        if (product != null && product.getId() != null) {
-            List<UUID> catIds = productCategoryRepository.findCategoryIdsByProductId(product.getId());
-            product.setCategoryIds(new HashSet<>(catIds));
-        }
-    }
-
-    private List<Product> populateCategoryIds(List<Product> products) {
-        if (products != null) {
-            for (Product p : products) {
-                populateCategoryIds(p);
-            }
-        }
-        return products;
-    }
 
     public List<Product> getSaleProducts() {
-        return populateCategoryIds(productRepository.findSaleProducts());
+        return productRepository.findSaleProducts();
     }
 
     public List<Product> getNewProducts() {
@@ -56,24 +37,23 @@ public class ProductService {
                 .toList();
         if (nonSaleNew.isEmpty()) {
             List<Product> allProducts = productRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-            return populateCategoryIds(allProducts.stream()
+            return allProducts.stream()
                     .filter(p -> p.getComparePrice() == null || p.getComparePrice() <= p.getSalePrice())
-                    .toList());
+                    .toList();
         }
-        return populateCategoryIds(nonSaleNew);
+        return nonSaleNew;
     }
 
     public List<Product> getAllProducts() {
-        return populateCategoryIds(productRepository.findAll());
+        return productRepository.findAll();
     }
 
     public List<Product> getProductsByTag(String tagName) {
-        return populateCategoryIds(productRepository.findByTagsTagNameIgnoreCase(tagName));
+        return productRepository.findByTagsTagNameIgnoreCase(tagName);
     }
 
     @Transactional
     public Product createProduct(ProductCreateRequest request) {
-        // Validate duplicates
         if (productRepository.findByProductName(request.getProductName()).isPresent()) {
             throw new RuntimeException("Product with name '" + request.getProductName() + "' already exists!");
         }
@@ -110,22 +90,16 @@ public class ProductService {
             product.setTags(tags);
         }
 
-        Product savedProduct = productRepository.save(product);
-
         if (request.getCategoryIds() != null) {
+            Set<Category> categories = new HashSet<>();
             for (String catIdStr : request.getCategoryIds()) {
                 UUID catId = UUID.fromString(catIdStr);
-                categoryRepository.findById(catId).ifPresent(category -> {
-                    productCategoryRepository.save(ProductCategory.builder()
-                            .product(savedProduct)
-                            .category(category)
-                            .build());
-                });
+                categoryRepository.findById(catId).ifPresent(categories::add);
             }
+            product.setCategories(categories);
         }
 
-        populateCategoryIds(savedProduct);
-        return savedProduct;
+        return productRepository.save(product);
     }
 
     @Transactional
@@ -134,7 +108,6 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
 
         if (request.getProductName() != null) {
-            // Check if name changed and new name is already taken
             if (!product.getProductName().equalsIgnoreCase(request.getProductName()) &&
                     productRepository.findByProductName(request.getProductName()).isPresent()) {
                 throw new RuntimeException("Product with name '" + request.getProductName() + "' already exists!");
@@ -191,34 +164,25 @@ public class ProductService {
         }
 
         if (request.getCategoryIds() != null) {
-            productCategoryRepository.deleteByProductId(id);
-            productCategoryRepository.flush();
-
+            Set<Category> categories = new HashSet<>();
             for (String catIdStr : request.getCategoryIds()) {
                 UUID catId = UUID.fromString(catIdStr);
-                categoryRepository.findById(catId).ifPresent(category -> {
-                    productCategoryRepository.save(ProductCategory.builder()
-                            .product(product)
-                            .category(category)
-                            .build());
-                });
+                categoryRepository.findById(catId).ifPresent(categories::add);
             }
+            product.setCategories(categories);
         }
 
-        Product saved = productRepository.save(product);
-        populateCategoryIds(saved);
-        return saved;
+        return productRepository.save(product);
     }
 
     @Transactional
     public void deleteProduct(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with id " + id));
-        productCategoryRepository.deleteByProductId(id);
         productRepository.delete(product);
     }
 
     public List<Product> getProductsByCategory(UUID categoryId) {
-        return populateCategoryIds(productRepository.findByCategoryId(categoryId));
+        return productRepository.findByCategoryId(categoryId);
     }
 }

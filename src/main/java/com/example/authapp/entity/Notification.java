@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 @Entity
 @Table(name = "notifications")
 @Data
@@ -16,23 +20,26 @@ public class Notification {
     @Id
     @GeneratedValue
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
-    @Column(name = "account_id")
-    private java.util.UUID accountId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id")
+    private StaffAccount account;
 
+    @Column(length = 100)
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     private Boolean seen;
 
     @Column(name = "created_at", nullable = false)
-    private java.time.OffsetDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @Column(name = "receive_time")
-    private java.time.OffsetDateTime receiveTime;
+    private OffsetDateTime receiveTime;
 
     @Column(name = "notification_expiry_date")
-    private java.time.LocalDate notificationExpiryDate;
+    private LocalDate notificationExpiryDate;
 }
