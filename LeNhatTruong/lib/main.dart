@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'providers/favorites_provider.dart';
-import 'providers/cart_provider.dart';
-import 'screens/splash_screen.dart';
-import 'screens/oauth2_redirect_screen.dart';
-import 'services/auth_service.dart';
-import 'utils/app_theme.dart';
+import 'package:le_nhat_truong/features/auth/providers/auth_provider.dart';
+import 'package:le_nhat_truong/features/favorites/providers/favorites_provider.dart';
+import 'package:le_nhat_truong/features/cart/providers/cart_provider.dart';
+import 'package:le_nhat_truong/features/shop/screens/splash_screen.dart';
+import 'package:le_nhat_truong/features/auth/screens/oauth2_redirect_screen.dart';
+import 'package:le_nhat_truong/features/auth/services/auth_service.dart';
+import 'package:le_nhat_truong/core/theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
