@@ -1,6 +1,6 @@
 package com.example.authapp.controller;
 
-import com.example.authapp.dto.response.OrderItemDataResponse;
+import com.example.authapp.entity.Order;
 import com.example.authapp.security.CustomUserDetails;
 import com.example.authapp.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +20,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping("/me")
-    public ResponseEntity<List<OrderItemDataResponse>> getMyOrders(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<Order>> getMyOrders(@AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getUser().getId();
-        List<OrderItemDataResponse> orders = orderService.getUserOrders(userId);
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(orderService.getUserOrders(userId));
     }
 }

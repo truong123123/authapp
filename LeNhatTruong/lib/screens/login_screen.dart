@@ -8,7 +8,6 @@ import '../utils/social_auth.dart';
 import 'main_page.dart';
 import 'register_screen.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -51,7 +50,8 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Text(error ?? 'Đăng nhập thất bại'),
           backgroundColor: AppTheme.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -63,7 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final redirectUri = kIsWeb
           ? '${AppConstants.baseUrl}/oauth2/redirect.html'
           : 'authapp://oauth2/redirect';
-      final url = '${AppConstants.baseUrl}/oauth2/authorization/$provider?redirect_uri=${Uri.encodeComponent(redirectUri)}';
+      final url =
+          '${AppConstants.baseUrl}/oauth2/authorization/$provider?redirect_uri=${Uri.encodeComponent(redirectUri)}';
       final result = await authenticateWithPopup(
         url: url,
         callbackUrlScheme: kIsWeb ? 'http' : 'authapp',
@@ -100,7 +101,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scale = ((constraints.maxWidth - 32) / 375).clamp(0.5, 1.5).toDouble();
+        final scale =
+            ((constraints.maxWidth - 32) / 375).clamp(0.5, 1.5).toDouble();
         return Scaffold(
           backgroundColor: const Color(0xFFF9F9F9),
           body: SafeArea(
@@ -110,57 +112,60 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: (375 * scale).clamp(200, 600),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _loginHeader(scale),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16 * scale),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildField(
-                              scale: scale,
-                              label: 'Email',
-                              controller: _emailCtrl,
-                              showCheck: _emailCtrl.text.isNotEmpty,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (v) {
-                                if (v == null || v.isEmpty) return 'Vui lòng nhập email';
-                                if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())) {
-                                  return 'Email không hợp lệ';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 16 * scale),
-                            _buildField(
-                              scale: scale,
-                              label: 'Password',
-                              controller: _passwordCtrl,
-                              obscure: true,
-                              validator: (v) =>
-                                  (v == null || v.isEmpty) ? 'Vui lòng nhập mật khẩu' : null,
-                            ),
-                            SizedBox(height: 16 * scale),
-                            _forgotPassword(scale),
-                            SizedBox(height: 32 * scale),
-                            _loginButton(scale),
-                            SizedBox(height: 16 * scale),
-                            _goToRegisterButton(scale),
-                            SizedBox(height: 140 * scale),
-                            _socialSection(scale),
-                            SizedBox(height: 32 * scale),
-                          ],
+                    children: [
+                      _loginHeader(scale),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16 * scale),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildField(
+                                scale: scale,
+                                label: 'Email',
+                                controller: _emailCtrl,
+                                showCheck: _emailCtrl.text.isNotEmpty,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (v) {
+                                  if (v == null || v.isEmpty)
+                                    return 'Vui lòng nhập email';
+                                  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                                      .hasMatch(v.trim())) {
+                                    return 'Email không hợp lệ';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              SizedBox(height: 16 * scale),
+                              _buildField(
+                                scale: scale,
+                                label: 'Password',
+                                controller: _passwordCtrl,
+                                obscure: true,
+                                validator: (v) => (v == null || v.isEmpty)
+                                    ? 'Vui lòng nhập mật khẩu'
+                                    : null,
+                              ),
+                              SizedBox(height: 16 * scale),
+                              _forgotPassword(scale),
+                              SizedBox(height: 32 * scale),
+                              _loginButton(scale),
+                              SizedBox(height: 16 * scale),
+                              _goToRegisterButton(scale),
+                              SizedBox(height: 140 * scale),
+                              _socialSection(scale),
+                              SizedBox(height: 32 * scale),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         );
       },
     );
@@ -265,7 +270,8 @@ class _LoginScreenState extends State<LoginScreen> {
             color: const Color(0xFF2D2D2D),
           ),
           floatingLabelBehavior: FloatingLabelBehavior.auto,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 21 * scale),
+          contentPadding: EdgeInsets.symmetric(
+              horizontal: 20 * scale, vertical: 21 * scale),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
@@ -298,7 +304,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         size: 20 * scale,
                         color: const Color(0xFF9B9B9B),
                       ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     )
                   : null),
         ),

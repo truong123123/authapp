@@ -30,6 +30,18 @@ class AppTheme {
         surface: surface,
         error: error,
       ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        contentTextStyle: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: Colors.white,
+        ),
+      ),
       textTheme: GoogleFonts.interTextTheme(
         const TextTheme(
           displayLarge:

@@ -8,7 +8,7 @@ class OrderProductItem {
   final String color;
   final String size;
   final int units;
-  final int price;
+  final double price;
   final String imageUrl;
   final String productId;
 
@@ -24,15 +24,27 @@ class OrderProductItem {
   });
 
   factory OrderProductItem.fromJson(Map<String, dynamic> json) {
+    final productJson = json['product'] as Map<String, dynamic>?;
+
+    final title = productJson?['productName'] ?? json['title'] ?? '';
+    final brand = productJson?['brandName'] ?? json['brand'] ?? '';
+    final imageUrl = productJson?['imageUrl'] ?? json['imageUrl'] ?? '';
+    final productId = productJson?['id'] ?? json['productId'] ?? '';
+
+    final units = json['quantity'] ?? json['units'] ?? 0;
+    final color = json['selectedColor'] ?? json['color'] ?? '';
+    final size = json['selectedSize'] ?? json['size'] ?? '';
+    final price = (json['price'] as num?)?.toDouble() ?? 0.0;
+
     return OrderProductItem(
-      title: json['title'] ?? '',
-      brand: json['brand'] ?? '',
-      color: json['color'] ?? '',
-      size: json['size'] ?? '',
-      units: json['units'] ?? 0,
-      price: json['price'] ?? 0,
-      imageUrl: json['imageUrl'] ?? '',
-      productId: json['productId'] ?? '',
+      title: title,
+      brand: brand,
+      color: color,
+      size: size,
+      units: units,
+      price: price,
+      imageUrl: imageUrl,
+      productId: productId,
     );
   }
 }
@@ -42,7 +54,7 @@ class OrderItemData {
   final String date;
   final String trackingNumber;
   final int quantity;
-  final int totalAmount;
+  final double totalAmount;
   final String status; // 'Delivered', 'Processing', 'Cancelled'
   final String shippingAddress;
   final String paymentMethodCardNumber;
@@ -67,22 +79,48 @@ class OrderItemData {
   });
 
   factory OrderItemData.fromJson(Map<String, dynamic> json) {
+    final items = (json['items'] as List<dynamic>?)
+            ?.map((item) => OrderProductItem.fromJson(item))
+            .toList() ??
+        [];
+
+    final computedQty = items.fold<int>(0, (sum, item) => sum + item.units);
+    final quantity = json['quantity'] ?? computedQty;
+
+    final status = json['orderStatus']?['statusName'] ?? json['status'] ?? '';
+
+    String rawDate = json['createdAt'] ?? json['date'] ?? '';
+    if (rawDate.length > 10) {
+      rawDate = rawDate.substring(0, 10);
+    }
+
+    final pm = json['paymentMethod']?.toString() ?? '';
+    String pmCard = '****';
+    String pmType = 'Visa';
+    if (pm.contains(' **** ')) {
+      final parts = pm.split(' **** ');
+      pmType = parts[0];
+      pmCard = parts[1];
+    } else if (pm.isNotEmpty) {
+      pmType = pm;
+    }
+
+    final paymentCard = json['paymentMethodCardNumber'] ?? pmCard;
+    final paymentType = json['paymentMethodType'] ?? pmType;
+
     return OrderItemData(
-      orderNo: json['orderNo'] ?? '',
-      date: json['date'] ?? '',
-      trackingNumber: json['trackingNumber'] ?? '',
-      quantity: json['quantity'] ?? 0,
-      totalAmount: json['totalAmount'] ?? 0,
-      status: json['status'] ?? '',
+      orderNo: json['id'] ?? json['orderNo'] ?? '',
+      date: rawDate,
+      trackingNumber: json['trackingNumber'] ?? 'IW347545345',
+      quantity: quantity,
+      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      status: status,
       shippingAddress: json['shippingAddress'] ?? '',
-      paymentMethodCardNumber: json['paymentMethodCardNumber'] ?? '',
-      paymentMethodType: json['paymentMethodType'] ?? '',
+      paymentMethodCardNumber: paymentCard,
+      paymentMethodType: paymentType,
       deliveryMethod: json['deliveryMethod'] ?? '',
-      discount: json['discount'] ?? '',
-      items: (json['items'] as List<dynamic>?)
-              ?.map((item) => OrderProductItem.fromJson(item))
-              .toList() ??
-          [],
+      discount: json['discount']?.toString() ?? '',
+      items: items,
     );
   }
 }
@@ -325,14 +363,19 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                order.orderNo,
-                style: GoogleFonts.inter(
-                  fontSize: 16 * scale,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF222222),
+              Expanded(
+                child: Text(
+                  'Order №${order.orderNo}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 16 * scale,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF222222),
+                  ),
                 ),
               ),
+              SizedBox(width: 8 * scale),
               Text(
                 order.date,
                 style: GoogleFonts.inter(
@@ -402,7 +445,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                     ),
                   ),
                   Text(
-                    '${order.totalAmount}\$',
+                    '${order.totalAmount % 1 == 0 ? order.totalAmount.toInt() : order.totalAmount}\$',
                     style: GoogleFonts.inter(
                       fontSize: 14 * scale,
                       color: const Color(0xFF222222),

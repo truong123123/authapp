@@ -23,6 +23,7 @@ public class Gallery {
     @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     private UUID id;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;

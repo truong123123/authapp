@@ -28,6 +28,7 @@ public class Review {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -53,4 +54,37 @@ public class Review {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("name")
+    public String getReviewerName() {
+        return user != null ? user.getName() : "Anonymous";
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("avatar")
+    public String getReviewerAvatar() {
+        String name = getReviewerName();
+        return (name != null && !name.isEmpty()) ? name.substring(0, 1).toUpperCase() : "U";
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("avatarUrl")
+    public String getReviewerAvatarUrl() {
+        return user != null ? user.getAvatarUrl() : "";
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("date")
+    public String getReviewDate() {
+        if (createdAt == null) return "Today";
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("MMMM dd, yyyy", java.util.Locale.ENGLISH);
+        return createdAt.format(formatter);
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("helpful")
+    public boolean isHelpful() {
+        return false;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("hasPhoto")
+    public boolean hasPhoto() {
+        return photos != null && !photos.isEmpty();
+    }
 }

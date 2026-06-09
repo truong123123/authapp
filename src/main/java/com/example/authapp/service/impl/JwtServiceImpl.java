@@ -1,5 +1,6 @@
-package com.example.authapp.config;
+package com.example.authapp.service.impl;
 
+import com.example.authapp.service.JwtService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -10,15 +11,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
 @Service
-public class JwtService {
-    private static final Logger logger = LoggerFactory.getLogger(JwtService.class);
+public class JwtServiceImpl implements JwtService {
+    private static final Logger logger = LoggerFactory.getLogger(JwtServiceImpl.class);
 
     @Value("${app.jwt.secret}")
     private String jwtSecret;
@@ -31,10 +31,12 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
+    @Override
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    @Override
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
                 .claims(extraClaims)
@@ -45,10 +47,12 @@ public class JwtService {
                 .compact();
     }
 
+    @Override
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
 
+    @Override
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
@@ -62,6 +66,7 @@ public class JwtService {
                 .getPayload();
     }
 
+    @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
@@ -72,6 +77,7 @@ public class JwtService {
         return expiration.before(new Date());
     }
 
+    @Override
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(authToken);

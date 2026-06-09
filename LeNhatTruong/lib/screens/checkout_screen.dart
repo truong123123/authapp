@@ -237,7 +237,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                     ),
                     SizedBox(height: 16 * scale),
-
                     if (_userCards.isNotEmpty) ...[
                       Text(
                         'Your Cards',
@@ -252,13 +251,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _userCards.length,
-                        separatorBuilder: (_, __) => SizedBox(height: 12 * scale),
+                        separatorBuilder: (_, __) =>
+                            SizedBox(height: 12 * scale),
                         itemBuilder: (context, index) {
                           final card = _userCards[index];
                           final cardTypeStr = card['cardType'] ?? 'Visa';
                           final lastFourStr = card['lastFour'] ?? '00';
-                          final isSelected = (_cardType.toLowerCase() == cardTypeStr.toString().toLowerCase() &&
-                                              _cardNumber == lastFourStr);
+                          final isSelected = (_cardType.toLowerCase() ==
+                                  cardTypeStr.toString().toLowerCase() &&
+                              _cardNumber == lastFourStr);
                           return InkWell(
                             onTap: () {
                               setState(() {
@@ -273,7 +274,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8 * scale),
                                 border: Border.all(
-                                  color: isSelected ? const Color(0xFFDB3022) : Colors.transparent,
+                                  color: isSelected
+                                      ? const Color(0xFFDB3022)
+                                      : Colors.transparent,
                                   width: 1.5,
                                 ),
                                 boxShadow: [
@@ -285,7 +288,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  _CardLogo(cardType: cardTypeStr, scale: scale),
+                                  _CardLogo(
+                                      cardType: cardTypeStr, scale: scale),
                                   SizedBox(width: 16 * scale),
                                   Expanded(
                                     child: Text(
@@ -298,7 +302,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     ),
                                   ),
                                   if (isSelected)
-                                    const Icon(Icons.check_circle, color: Color(0xFF2AA95C))
+                                    const Icon(Icons.check_circle,
+                                        color: Color(0xFF2AA95C))
                                 ],
                               ),
                             ),
@@ -307,12 +312,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       SizedBox(height: 16 * scale),
                     ],
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          isAddingNewCard ? 'Add New Card' : 'Or add another method',
+                          isAddingNewCard
+                              ? 'Add New Card'
+                              : 'Or add another method',
                           style: GoogleFonts.inter(
                             fontSize: 12 * scale,
                             fontWeight: FontWeight.w600,
@@ -338,7 +344,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ],
                     ),
                     SizedBox(height: 10 * scale),
-
                     if (isAddingNewCard) ...[
                       Row(
                         children: [
@@ -353,7 +358,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 padding: EdgeInsets.all(12 * scale),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8 * scale),
+                                  borderRadius:
+                                      BorderRadius.circular(8 * scale),
                                   border: Border.all(
                                     color: selectedCardType == 'MasterCard'
                                         ? const Color(0xFFDB3022)
@@ -363,7 +369,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    _CardLogo(cardType: 'MasterCard', scale: scale),
+                                    _CardLogo(
+                                        cardType: 'MasterCard', scale: scale),
                                     SizedBox(width: 12 * scale),
                                     Text(
                                       'MasterCard',
@@ -389,7 +396,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 padding: EdgeInsets.all(12 * scale),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8 * scale),
+                                  borderRadius:
+                                      BorderRadius.circular(8 * scale),
                                   border: Border.all(
                                     color: selectedCardType == 'Visa'
                                         ? const Color(0xFFDB3022)
@@ -421,7 +429,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'Card Number',
-                          labelStyle: GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
+                          labelStyle:
+                              GoogleFonts.inter(color: const Color(0xFF9B9B9B)),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -430,7 +439,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8 * scale),
-                            borderSide: const BorderSide(color: Color(0xFFDB3022)),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFDB3022)),
                           ),
                         ),
                       ),
@@ -461,19 +471,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               context: context,
                               barrierDismissible: false,
                               builder: (ctx) => const Center(
-                                child: CircularProgressIndicator(color: Color(0xFFDB3022)),
+                                child: CircularProgressIndicator(
+                                    color: Color(0xFFDB3022)),
                               ),
                             );
 
                             try {
                               final authService = AuthService();
-                              await authService.addUserCard(selectedCardType, digits);
-                              
+                              await authService.addUserCard(
+                                  selectedCardType, digits);
+
                               await _loadUserCards();
 
                               Navigator.pop(context);
                               Navigator.pop(ctx);
-                              
+
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Đã thêm thẻ thành công!'),
@@ -781,68 +793,71 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 width: double.infinity,
                 height: 48 * scale,
                 child: ElevatedButton(
-                  onPressed: cartProvider.items.isEmpty ? null : () async {
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (ctx) => const Center(
-                        child:
-                            CircularProgressIndicator(color: Color(0xFFDB3022)),
-                      ),
-                    );
+                  onPressed: cartProvider.items.isEmpty
+                      ? null
+                      : () async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (ctx) => const Center(
+                              child: CircularProgressIndicator(
+                                  color: Color(0xFFDB3022)),
+                            ),
+                          );
 
-                    try {
-                      final List<Map<String, dynamic>> orderItems = cartProvider.items.map((item) {
-                        return {
-                          'productId': item.product.id,
-                          'quantity': item.quantity,
-                          'selectedSize': item.selectedSize,
-                          'selectedColor': item.selectedColor,
-                          'price': item.product.salePrice,
-                        };
-                      }).toList();
+                          try {
+                            final List<Map<String, dynamic>> orderItems =
+                                cartProvider.items.map((item) {
+                              return {
+                                'productId': item.product.id,
+                                'quantity': item.quantity,
+                                'selectedSize': item.selectedSize,
+                                'selectedColor': item.selectedColor,
+                                'price': item.product.salePrice,
+                              };
+                            }).toList();
 
-                      String deliveryMethodStr = 'FedEx';
-                      if (_selectedDeliveryIndex == 1) {
-                        deliveryMethodStr = 'USPS';
-                      } else if (_selectedDeliveryIndex == 2) {
-                        deliveryMethodStr = 'DHL';
-                      }
+                            String deliveryMethodStr = 'FedEx';
+                            if (_selectedDeliveryIndex == 1) {
+                              deliveryMethodStr = 'USPS';
+                            } else if (_selectedDeliveryIndex == 2) {
+                              deliveryMethodStr = 'DHL';
+                            }
 
-                      final orderPayload = {
-                        'totalAmount': summaryAmount,
-                        'shippingAddress': _shippingAddress,
-                        'deliveryMethod': deliveryMethodStr,
-                        'paymentMethod': '$_cardType **** $_cardNumber',
-                        'discount': cartProvider.discountAmount,
-                        'items': orderItems,
-                      };
+                            final orderPayload = {
+                              'totalAmount': summaryAmount,
+                              'shippingAddress': _shippingAddress,
+                              'deliveryMethod': deliveryMethodStr,
+                              'paymentMethod': '$_cardType **** $_cardNumber',
+                              'discount': cartProvider.discountAmount,
+                              'items': orderItems,
+                            };
 
-                      final authService = AuthService();
-                      await authService.createRealOrder(orderPayload);
+                            final authService = AuthService();
+                            await authService.createRealOrder(orderPayload);
 
-                      Navigator.pop(context);
+                            Navigator.pop(context);
 
-                      cartProvider.clearCart();
-                      final isYellow = Random().nextBool();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              OrderSuccessScreen(isYellow: isYellow),
-                        ),
-                      );
-                    } catch (e) {
-                      Navigator.pop(context);
+                            cartProvider.clearCart();
+                            final isYellow = Random().nextBool();
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    OrderSuccessScreen(isYellow: isYellow),
+                              ),
+                            );
+                          } catch (e) {
+                            Navigator.pop(context);
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: const Color(0xFFDB3022),
-                          content: Text('Lỗi khi đặt hàng: $e'),
-                        ),
-                      );
-                    }
-                  },
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: const Color(0xFFDB3022),
+                                content: Text('Lỗi khi đặt hàng: $e'),
+                              ),
+                            );
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFDB3022),
                     shape: RoundedRectangleBorder(

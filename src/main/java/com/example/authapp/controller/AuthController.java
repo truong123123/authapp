@@ -1,12 +1,8 @@
 package com.example.authapp.controller;
 
-import com.example.authapp.dto.request.LoginRequest;
-import com.example.authapp.dto.request.RefreshTokenRequest;
-import com.example.authapp.dto.request.RegisterRequest;
-import com.example.authapp.dto.response.AuthResponse;
+import com.example.authapp.entity.User;
 import com.example.authapp.security.CustomUserDetails;
 import com.example.authapp.service.AuthService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,21 +18,25 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        authService.register(registerRequest);
+    public ResponseEntity<Map<String, String>> registerUser(@RequestBody User user) {
+        authService.register(user);
         Map<String, String> response = new HashMap<>();
         response.put("message", "User registered successfully");
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(authService.login(loginRequest));
+    public ResponseEntity<User> authenticateUser(@RequestBody User user) {
+        return ResponseEntity.ok(authService.login(user));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) {
-        return ResponseEntity.ok(authService.refreshToken(refreshTokenRequest));
+    public ResponseEntity<User> refreshToken(@RequestBody Map<String, String> request) {
+        String token = request.get("refreshToken");
+        if (token == null) {
+            throw new IllegalArgumentException("Refresh token is required");
+        }
+        return ResponseEntity.ok(authService.refreshToken(token));
     }
 
     @PostMapping("/logout")

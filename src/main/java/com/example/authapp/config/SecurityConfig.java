@@ -3,7 +3,7 @@ package com.example.authapp.config;
 import com.example.authapp.security.JwtAccessDeniedHandler;
 import com.example.authapp.security.JwtAuthenticationEntryPoint;
 import com.example.authapp.security.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.example.authapp.service.OAuth2UserServiceImpl;
+import com.example.authapp.service.impl.OAuth2UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

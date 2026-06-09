@@ -47,7 +47,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           content: const Text('Đăng ký thành công! Hãy đăng nhập.'),
           backgroundColor: AppTheme.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           margin: const EdgeInsets.all(16),
         ),
       );
@@ -71,8 +72,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _handleSocialLogin(String provider) async {
     try {
-      final redirectUri = kIsWeb ? '${AppConstants.baseUrl}/oauth2/redirect.html' : 'authapp://oauth2/redirect';
-      final url = '${AppConstants.baseUrl}/oauth2/authorization/$provider?redirect_uri=${Uri.encodeComponent(redirectUri)}';
+      final redirectUri = kIsWeb
+          ? '${AppConstants.baseUrl}/oauth2/redirect.html'
+          : 'authapp://oauth2/redirect';
+      final url =
+          '${AppConstants.baseUrl}/oauth2/authorization/$provider?redirect_uri=${Uri.encodeComponent(redirectUri)}';
       final result = await authenticateWithPopup(
         url: url,
         callbackUrlScheme: kIsWeb ? 'http' : 'authapp',
@@ -109,7 +113,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scale = ((constraints.maxWidth - 32) / 375).clamp(0.5, 1.5).toDouble();
+        final scale =
+            ((constraints.maxWidth - 32) / 375).clamp(0.5, 1.5).toDouble();
         return Scaffold(
           backgroundColor: const Color(0xFFF9F9F9),
           body: SafeArea(
@@ -119,64 +124,69 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: (375 * scale).clamp(200, 600),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _signUpHeader(scale),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16 * scale),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildField(
-                              scale: scale,
-                              label: 'Name',
-                              controller: _nameCtrl,
-                              hint: '',
-                              showCheck: _nameCtrl.text.isNotEmpty,
-                              validator: (v) =>
-                                  (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên' : null,
-                            ),
-                            SizedBox(height: 16 * scale),
-                            _buildField(
-                              scale: scale,
-                              label: 'Email',
-                              controller: _emailCtrl,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: (v) {
-                                if (v == null || v.isEmpty) return 'Vui lòng nhập email';
-                                if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())) {
-                                  return 'Email không hợp lệ';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 16 * scale),
-                            _buildField(
-                              scale: scale,
-                              label: 'Password',
-                              controller: _passwordCtrl,
-                              obscure: true,
-                              validator: (v) =>
-                                  (v == null || v.length < 8) ? 'Mật khẩu phải có ít nhất 8 ký tự' : null,
-                            ),
-                            SizedBox(height: 16 * scale),
-                            _alreadyHaveAccount(scale),
-                            SizedBox(height: 32 * scale),
-                            _signUpButton(scale),
-                            SizedBox(height: 124 * scale),
-                            _socialSection(scale),
-                            SizedBox(height: 32 * scale),
-                          ],
+                    children: [
+                      _signUpHeader(scale),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16 * scale),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildField(
+                                scale: scale,
+                                label: 'Name',
+                                controller: _nameCtrl,
+                                hint: '',
+                                showCheck: _nameCtrl.text.isNotEmpty,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Vui lòng nhập tên'
+                                        : null,
+                              ),
+                              SizedBox(height: 16 * scale),
+                              _buildField(
+                                scale: scale,
+                                label: 'Email',
+                                controller: _emailCtrl,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (v) {
+                                  if (v == null || v.isEmpty)
+                                    return 'Vui lòng nhập email';
+                                  if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                                      .hasMatch(v.trim())) {
+                                    return 'Email không hợp lệ';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              SizedBox(height: 16 * scale),
+                              _buildField(
+                                scale: scale,
+                                label: 'Password',
+                                controller: _passwordCtrl,
+                                obscure: true,
+                                validator: (v) => (v == null || v.length < 8)
+                                    ? 'Mật khẩu phải có ít nhất 8 ký tự'
+                                    : null,
+                              ),
+                              SizedBox(height: 16 * scale),
+                              _alreadyHaveAccount(scale),
+                              SizedBox(height: 32 * scale),
+                              _signUpButton(scale),
+                              SizedBox(height: 124 * scale),
+                              _socialSection(scale),
+                              SizedBox(height: 32 * scale),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
         );
       },
     );
@@ -278,7 +288,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             color: const Color(0xFF2D2D2D),
           ),
           floatingLabelBehavior: FloatingLabelBehavior.auto,
-          contentPadding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 21 * scale),
+          contentPadding: EdgeInsets.symmetric(
+              horizontal: 20 * scale, vertical: 21 * scale),
           filled: true,
           fillColor: Colors.white,
           border: OutlineInputBorder(
@@ -311,7 +322,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         size: 20 * scale,
                         color: const Color(0xFF9B9B9B),
                       ),
-                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                     )
                   : null),
         ),

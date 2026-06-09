@@ -1,6 +1,7 @@
 package com.example.authapp.config;
 
 import com.example.authapp.service.CustomUserDetailsService;
+import com.example.authapp.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

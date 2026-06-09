@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Collections;
 
@@ -20,6 +21,7 @@ public class AuthApplication {
 
     @Bean
     @org.springframework.core.annotation.Order(2)
+    @Profile("!test")
     public CommandLineRunner initDatabase(
             UserRepository userRepository,
             RoleRepository roleRepository,

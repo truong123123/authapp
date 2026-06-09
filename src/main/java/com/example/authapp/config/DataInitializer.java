@@ -12,6 +12,7 @@ import com.example.authapp.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -22,6 +23,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 @org.springframework.core.annotation.Order(1)
+@Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
         private final ProductRepository productRepository;

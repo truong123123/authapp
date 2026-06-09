@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:le_nhat_truong/utils/constants.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/rating_summary.dart';
+import '../services/auth_service.dart';
 import '../services/product_service.dart';
 
 class RatingReviewsScreen extends StatefulWidget {
@@ -24,12 +25,62 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
   bool _isLoadingSummary = true;
   List<Map<String, dynamic>> _serverReviews = [];
   bool _isLoadingReviews = true;
+  int? _currentUserId;
+  Map<String, dynamic>? _currentUserReview;
+  bool _hasCurrentUserReview = false;
 
   @override
   void initState() {
     super.initState();
+    _loadCurrentUserAndReviews();
     _loadSummary();
-    _loadReviews();
+  }
+
+  Future<void> _loadCurrentUserAndReviews() async {
+    await _loadCurrentUser();
+    await _loadReviews();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    try {
+      final user = await AuthService().getMe();
+      if (mounted) {
+        setState(() {
+          _currentUserId = user.id;
+        });
+      }
+    } catch (_) {
+      // Nếu chưa đăng nhập hoặc lỗi, vẫn cho phép tiếp tục xem review.
+    }
+  }
+
+  void _updateCurrentUserReview(List<Map<String, dynamic>> reviews) {
+    if (_currentUserId == null) {
+      setState(() {
+        _hasCurrentUserReview = false;
+        _currentUserReview = null;
+      });
+      return;
+    }
+
+    Map<String, dynamic>? existing;
+    for (final review in reviews) {
+      final user = review['user'];
+      if (user is Map<String, dynamic>) {
+        final id = user['id'];
+        if (id != null && id == _currentUserId) {
+          existing = review;
+          break;
+        }
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _currentUserReview = existing;
+        _hasCurrentUserReview = existing != null;
+      });
+    }
   }
 
   Future<void> _loadSummary() async {
@@ -49,6 +100,7 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
         _serverReviews = reviews;
         _isLoadingReviews = false;
       });
+      _updateCurrentUserReview(reviews);
     }
   }
 
@@ -201,7 +253,10 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
   Widget build(BuildContext context) {
     final scale = (MediaQuery.of(context).size.width / 375).clamp(0.5, 1.5);
 
-    final List<Map<String, dynamic>> allReviews = [..._serverReviews, ..._reviews];
+    final List<Map<String, dynamic>> allReviews = [
+      ..._serverReviews,
+      ..._reviews
+    ];
 
     // Filter reviews based on checkbox state
     final filteredReviews = _withPhotoOnly
@@ -252,12 +307,29 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '${filteredReviews.length} reviews',
-                      style: GoogleFonts.outfit(
-                        fontSize: 24 * scale,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF222222),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${filteredReviews.length} reviews',
+                            style: GoogleFonts.outfit(
+                              fontSize: 24 * scale,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF222222),
+                            ),
+                          ),
+                          if (_hasCurrentUserReview) ...[
+                            SizedBox(height: 8 * scale),
+                            Text(
+                              'Bạn đã đánh giá sản phẩm này. Nhấn Edit review để sửa.',
+                              style: GoogleFonts.inter(
+                                fontSize: 12 * scale,
+                                color: const Color(0xFF9B9B9B),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     GestureDetector(
@@ -323,7 +395,11 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
             bottom: 24 * scale,
             child: FloatingActionButton.extended(
               onPressed: () {
-                _showWriteReviewBottomSheet(context, scale);
+                _showWriteReviewBottomSheet(
+                  context,
+                  scale,
+                  existingReview: _currentUserReview,
+                );
               },
               backgroundColor: const Color(0xFFDB3022),
               elevation: 6,
@@ -332,7 +408,7 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
               ),
               icon: Icon(Icons.edit, color: Colors.white, size: 18 * scale),
               label: Text(
-                'Write a review',
+                _hasCurrentUserReview ? 'Edit review' : 'Write a review',
                 style: GoogleFonts.inter(
                   fontSize: 14 * scale,
                   fontWeight: FontWeight.w600,
@@ -823,16 +899,13 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                                   itemBuilder: (_, idx) {
                                     final photoUrl = photos[idx];
                                     return Padding(
-                                      padding: EdgeInsets.only(
-                                          right: 12 * scale),
+                                      padding:
+                                          EdgeInsets.only(right: 12 * scale),
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            8 * scale),
-                                        child:
-                                            _buildImageWidget(
-                                                photoUrl,
-                                                104 * scale,
-                                                104 * scale),
+                                        borderRadius:
+                                            BorderRadius.circular(8 * scale),
+                                        child: _buildImageWidget(
+                                            photoUrl, 104 * scale, 104 * scale),
                                       ),
                                     );
                                   },
@@ -926,10 +999,12 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                                   );
 
                                   try {
-                                    final success = await ProductService().createReview(
+                                    final success =
+                                        await ProductService().createReview(
                                       widget.productId,
                                       rating,
                                       content,
+                                      List<String>.from(photos),
                                     );
 
                                     // Pop loading indicator
@@ -942,16 +1017,19 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
 
                                       // Close preview and write review bottom sheets
                                       Navigator.pop(ctx); // Close preview
-                                      Navigator.pop(context); // Close write review
+                                      Navigator.pop(
+                                          context); // Close write review
 
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             'Cảm ơn bạn đã gửi đánh giá!',
                                             style: GoogleFonts.inter(
                                                 fontWeight: FontWeight.w500),
                                           ),
-                                          backgroundColor: const Color(0xFF2AA95C),
+                                          backgroundColor:
+                                              const Color(0xFF2AA95C),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
@@ -966,11 +1044,13 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                                       );
                                     }
                                   } catch (e) {
-                                    Navigator.pop(ctx); // Pop loading indicator if crash
+                                    Navigator.pop(
+                                        ctx); // Pop loading indicator if crash
                                     ScaffoldMessenger.of(ctx).showSnackBar(
                                       SnackBar(
                                         content: Text('Đã xảy ra lỗi: $e'),
-                                        backgroundColor: const Color(0xFFDB3022),
+                                        backgroundColor:
+                                            const Color(0xFFDB3022),
                                       ),
                                     );
                                   }
@@ -978,8 +1058,8 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFDB3022),
                                   elevation: 4,
-                                  shadowColor: const Color(0xFFDB3022)
-                                      .withOpacity(0.4),
+                                  shadowColor:
+                                      const Color(0xFFDB3022).withOpacity(0.4),
                                   shape: RoundedRectangleBorder(
                                     borderRadius:
                                         BorderRadius.circular(24 * scale),
@@ -1010,11 +1090,24 @@ class _RatingReviewsScreenState extends State<RatingReviewsScreen> {
     );
   }
 
-  void _showWriteReviewBottomSheet(BuildContext context, double scale) {
-
-    int currentRating = 5;
-    final textController = TextEditingController();
-    final List<String> pickedPhotos = [];
+  void _showWriteReviewBottomSheet(
+    BuildContext context,
+    double scale, {
+    Map<String, dynamic>? existingReview,
+  }) {
+    int currentRating =
+        existingReview != null && existingReview['rating'] is int
+            ? existingReview['rating'] as int
+            : 5;
+    final textController = TextEditingController(
+      text: existingReview != null && existingReview['content'] is String
+          ? existingReview['content'] as String
+          : '',
+    );
+    final List<String> pickedPhotos =
+        existingReview != null && existingReview['photos'] != null
+            ? List<String>.from(existingReview['photos'] as List)
+            : [];
 
     showModalBottomSheet(
       context: context,

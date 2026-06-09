@@ -92,6 +92,7 @@ public class Product {
     @JoinColumn(name = "updated_by")
     private StaffAccount updatedBy;
 
+    @com.fasterxml.jackson.annotation.JsonProperty(value = "tags", access = com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY)
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "product_tags",
@@ -100,6 +101,10 @@ public class Product {
     )
     @Builder.Default
     private Set<Tag> tags = new HashSet<>();
+
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty(value = "tags", access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    private Set<String> tagNames;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))

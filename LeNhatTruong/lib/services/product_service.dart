@@ -209,7 +209,8 @@ class ProductService {
     }
   }
 
-  Future<bool> createReview(String productId, int rating, String content) async {
+  Future<bool> createReview(
+      String productId, int rating, String content, List<String> photos) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.accessTokenKey);
@@ -226,6 +227,7 @@ class ProductService {
         body: jsonEncode({
           'rating': rating,
           'content': content,
+          'photos': photos,
         }),
       );
 

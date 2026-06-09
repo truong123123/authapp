@@ -1,4 +1,4 @@
-package com.example.authapp.service;
+package com.example.authapp.service.impl;
 
 import com.example.authapp.entity.Role;
 import com.example.authapp.entity.User;

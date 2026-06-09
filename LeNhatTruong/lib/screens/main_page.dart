@@ -11,7 +11,6 @@ import '../utils/constants.dart';
 import 'login_screen.dart';
 import 'product_detail_screen.dart';
 
-
 import 'favorites_screen.dart';
 import 'bag_screen.dart';
 import 'my_orders_screen.dart';
@@ -52,22 +51,24 @@ class _MainPageState extends State<MainPage> {
   List<Product> _applyFilters(List<Product> products) {
     return products.where((product) {
       // 1. Price range filter
-      if (product.salePrice < _filterPriceRange.start || product.salePrice > _filterPriceRange.end) {
+      if (product.salePrice < _filterPriceRange.start ||
+          product.salePrice > _filterPriceRange.end) {
         return false;
       }
-      
+
       // 2. Color filter
       if (_filterSelectedColors.isNotEmpty) {
         bool matchColor = false;
         for (final color in _filterSelectedColors) {
-          if (product.colors.any((c) => c.toLowerCase() == color.toLowerCase())) {
+          if (product.colors
+              .any((c) => c.toLowerCase() == color.toLowerCase())) {
             matchColor = true;
             break;
           }
         }
         if (!matchColor) return false;
       }
-      
+
       // 3. Size filter
       if (_filterSelectedSizes.isNotEmpty) {
         bool matchSize = false;
@@ -79,7 +80,7 @@ class _MainPageState extends State<MainPage> {
         }
         if (!matchSize) return false;
       }
-      
+
       // 4. Category filter
       if (_filterSelectedCategory != 'All') {
         final gender = _filterSelectedCategory.toLowerCase();
@@ -105,20 +106,21 @@ class _MainPageState extends State<MainPage> {
         }
         if (!matchGender) return false;
       }
-      
+
       // 5. Brand filter
       if (_filterSelectedBrands.isNotEmpty) {
         final brandLower = product.brandName?.toLowerCase() ?? '';
         bool matchBrand = false;
         for (final brand in _filterSelectedBrands) {
-          if (brandLower.contains(brand.toLowerCase()) || brand.toLowerCase().contains(brandLower)) {
+          if (brandLower.contains(brand.toLowerCase()) ||
+              brand.toLowerCase().contains(brandLower)) {
             matchBrand = true;
             break;
           }
         }
         if (!matchBrand) return false;
       }
-      
+
       return true;
     }).toList();
   }
@@ -169,7 +171,7 @@ class _MainPageState extends State<MainPage> {
       final sales = await _productService.getSaleProducts();
       final news = await _productService.getNewProducts();
       final cats = await _productService.getCategories();
-      
+
       // Exclude products that are on sale from the new products list
       final saleIds = sales.map((p) => p.id).toSet();
       final uniqueNews = news.where((p) => !saleIds.contains(p.id)).toList();
@@ -196,7 +198,9 @@ class _MainPageState extends State<MainPage> {
       builder: (context, constraints) {
         final screenWidth = constraints.maxWidth;
         final scale = (screenWidth / 375).clamp(0.5, 1.5).toDouble();
-        final bannerH = (536 * scale).clamp(280, 600.0).toDouble(); // Tỷ lệ dài như thiết kế ảnh 1
+        final bannerH = (536 * scale)
+            .clamp(280, 600.0)
+            .toDouble(); // Tỷ lệ dài như thiết kế ảnh 1
         final cardW = (150 * scale).clamp(120, 240.0).toDouble();
         final cardH = (260 * scale).clamp(200, 380.0).toDouble();
 
@@ -210,7 +214,11 @@ class _MainPageState extends State<MainPage> {
                     index: _currentIndex,
                     children: [
                       _homeView == 'main'
-                          ? _buildShopTab(scale: scale, bannerH: bannerH, cardW: cardW, cardH: cardH)
+                          ? _buildShopTab(
+                              scale: scale,
+                              bannerH: bannerH,
+                              cardW: cardW,
+                              cardH: cardH)
                           : CollectionsScreen(scale: scale),
                       _buildCategoriesTab(scale: scale),
                       const BagScreen(),
@@ -317,10 +325,12 @@ class _MainPageState extends State<MainPage> {
             SizedBox(height: 12 * scale),
             _newProducts.isEmpty
                 ? Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0 * scale, vertical: 8 * scale),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16.0 * scale, vertical: 8 * scale),
                     child: Text(
                       'Không có sản phẩm mới nào',
-                      style: GoogleFonts.inter(color: Colors.grey, fontSize: 14 * scale),
+                      style: GoogleFonts.inter(
+                          color: Colors.grey, fontSize: 14 * scale),
                     ),
                   )
                 : SizedBox(
@@ -349,7 +359,8 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _buildPlaceholderTab({required double scale, required String title, required IconData icon}) {
+  Widget _buildPlaceholderTab(
+      {required double scale, required String title, required IconData icon}) {
     return Container(
       color: const Color(0xFFF9F9F9),
       width: double.infinity,
@@ -357,7 +368,9 @@ class _MainPageState extends State<MainPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64 * scale, color: const Color(0xFFDB3022).withOpacity(0.5)),
+            Icon(icon,
+                size: 64 * scale,
+                color: const Color(0xFFDB3022).withOpacity(0.5)),
             SizedBox(height: 16 * scale),
             Text(
               title,
@@ -410,11 +423,13 @@ class _MainPageState extends State<MainPage> {
           // AppBar Categories
           Container(
             color: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 4 * scale, vertical: 8 * scale),
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 18 * scale),
+                  icon: Icon(Icons.arrow_back_ios_new,
+                      color: const Color(0xFF222222), size: 18 * scale),
                   onPressed: () {
                     setState(() {
                       _currentIndex = 0; // Go back to Home
@@ -434,7 +449,8 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.search, color: const Color(0xFF222222), size: 24 * scale),
+                  icon: Icon(Icons.search,
+                      color: const Color(0xFF222222), size: 24 * scale),
                   onPressed: () {},
                 ),
               ],
@@ -459,7 +475,8 @@ class _MainPageState extends State<MainPage> {
           // Scrollable area
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 16 * scale),
+              padding: EdgeInsets.symmetric(
+                  horizontal: 16 * scale, vertical: 16 * scale),
               child: Column(
                 children: [
                   // Summer Sales banner
@@ -472,16 +489,21 @@ class _MainPageState extends State<MainPage> {
                       padding: EdgeInsets.symmetric(vertical: 40 * scale),
                       child: Text(
                         'Không có danh mục nào',
-                        style: GoogleFonts.inter(fontSize: 14 * scale, color: Colors.grey),
+                        style: GoogleFonts.inter(
+                            fontSize: 14 * scale, color: Colors.grey),
                       ),
                     ),
 
                   // Categories list dynamically loaded
                   ..._backendCategories.map((cat) {
-                    final String fallbackImg = '${AppConstants.baseUrl}/images/cat_${cat.categoryName.toLowerCase().replaceAll(" ", "_")}.jpg';
-                    final String imgUrl = (cat.image != null && cat.image!.isNotEmpty)
-                        ? (cat.image!.startsWith('http') ? cat.image! : '${AppConstants.baseUrl}${cat.image}')
-                        : fallbackImg;
+                    final String fallbackImg =
+                        '${AppConstants.baseUrl}/images/cat_${cat.categoryName.toLowerCase().replaceAll(" ", "_")}.jpg';
+                    final String imgUrl =
+                        (cat.image != null && cat.image!.isNotEmpty)
+                            ? (cat.image!.startsWith('http')
+                                ? cat.image!
+                                : '${AppConstants.baseUrl}${cat.image}')
+                            : fallbackImg;
                     return Padding(
                       padding: EdgeInsets.only(bottom: 16 * scale),
                       child: _buildCategoryCard(
@@ -529,7 +551,9 @@ class _MainPageState extends State<MainPage> {
                 style: GoogleFonts.inter(
                   fontSize: 16 * scale,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF222222) : const Color(0xFF9B9B9B),
+                  color: isSelected
+                      ? const Color(0xFF222222)
+                      : const Color(0xFF9B9B9B),
                 ),
               ),
             ),
@@ -585,7 +609,8 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _buildCategoryCard(String title, String imageUrl, double scale, VoidCallback onTap) {
+  Widget _buildCategoryCard(
+      String title, String imageUrl, double scale, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -664,11 +689,13 @@ class _MainPageState extends State<MainPage> {
           // AppBar Categories
           Container(
             color: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 4 * scale, vertical: 8 * scale),
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 18 * scale),
+                  icon: Icon(Icons.arrow_back_ios_new,
+                      color: const Color(0xFF222222), size: 18 * scale),
                   onPressed: () {
                     setState(() {
                       _currentShopView = 'main'; // Go back to main categories
@@ -688,16 +715,18 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.search, color: const Color(0xFF222222), size: 24 * scale),
+                  icon: Icon(Icons.search,
+                      color: const Color(0xFF222222), size: 24 * scale),
                   onPressed: () {},
                 ),
               ],
             ),
           ),
-          
+
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 16 * scale),
+              padding: EdgeInsets.symmetric(
+                  horizontal: 16 * scale, vertical: 16 * scale),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -707,7 +736,8 @@ class _MainPageState extends State<MainPage> {
                     height: 48 * scale,
                     child: ElevatedButton(
                       onPressed: () {
-                        final clothesCats = _backendCategories.where((c) => c.categoryName.toLowerCase() == 'clothes');
+                        final clothesCats = _backendCategories.where(
+                            (c) => c.categoryName.toLowerCase() == 'clothes');
                         if (clothesCats.isNotEmpty) {
                           _loadCategoryProducts(clothesCats.first);
                         }
@@ -740,9 +770,10 @@ class _MainPageState extends State<MainPage> {
                     ),
                   ),
                   SizedBox(height: 8 * scale),
-                  
+
                   // Sub-category Items List
-                  ...subCategories.map((subCat) => _buildSubCategoryRow(subCat, scale)),
+                  ...subCategories
+                      .map((subCat) => _buildSubCategoryRow(subCat, scale)),
                 ],
               ),
             ),
@@ -763,7 +794,8 @@ class _MainPageState extends State<MainPage> {
         ),
       ),
       child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
+        contentPadding:
+            EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
         title: Text(
           title,
           style: GoogleFonts.inter(
@@ -773,12 +805,7 @@ class _MainPageState extends State<MainPage> {
           ),
         ),
         onTap: () {
-          if (title.toLowerCase() == 'tops') {
-            setState(() {
-              _currentShopView = 'sub_tops';
-            });
-            _loadTopsProducts();
-          }
+          _loadSubCategoryProducts(title);
         },
       ),
     );
@@ -800,13 +827,139 @@ class _MainPageState extends State<MainPage> {
       setState(() {
         _isCategoryProductsLoading = false;
       });
-      print('>>> Error loading products for category ${category.categoryName}: $e');
+      print(
+          '>>> Error loading products for category ${category.categoryName}: $e');
+    }
+  }
+
+  Future<void> _loadSubCategoryProducts(String subCategoryName) async {
+    setState(() {
+      _selectedCategory = CategoryModel(
+        id: '',
+        categoryName: subCategoryName,
+        categoryDescription: '',
+        icon: '',
+        image: '',
+        placeholder: '',
+        active: true,
+      );
+      _isCategoryProductsLoading = true;
+      _currentShopView = 'category_products';
+    });
+    try {
+      // Find the Clothes category from backend categories
+      final clothesCat = _backendCategories.firstWhere(
+        (c) => c.categoryName.toLowerCase() == 'clothes',
+        orElse: () => _backendCategories.first,
+      );
+      // Load all clothes products
+      final allClothes =
+          await _productService.getProductsByCategory(clothesCat.id);
+
+      // Filter products based on subcategory keywords
+      List<Product> filtered = [];
+      final name = subCategoryName.toLowerCase();
+
+      if (name == 'tops') {
+        filtered = allClothes.where((p) {
+          final pName = p.productName.toLowerCase();
+          return pName.contains('t-shirt') ||
+              pName.contains('tshirt') ||
+              pName.contains('hoodie') ||
+              pName.contains('crop top') ||
+              pName.contains('top');
+        }).toList();
+        if (filtered.isEmpty) {
+          filtered = await _productService.getProductsByTag('TOPS');
+        }
+      } else if (name == 'shirts & blouses') {
+        filtered = allClothes.where((p) {
+          final pName = p.productName.toLowerCase();
+          return (pName.contains('shirt') &&
+                  !pName.contains('t-shirt') &&
+                  !pName.contains('tshirt')) ||
+              pName.contains('blouse');
+        }).toList();
+      } else if (name == 'cardigans & sweaters') {
+        filtered = allClothes.where((p) {
+          final pName = p.productName.toLowerCase();
+          return pName.contains('cardigan') ||
+              pName.contains('sweater') ||
+              pName.contains('pullover') ||
+              pName.contains('knitwear');
+        }).toList();
+      } else if (name == 'knitwear') {
+        filtered = allClothes.where((p) {
+          final pName = p.productName.toLowerCase();
+          return pName.contains('knitwear') || pName.contains('knit');
+        }).toList();
+      } else if (name == 'blazers') {
+        filtered = allClothes.where((p) {
+          final pName = p.productName.toLowerCase();
+          return pName.contains('blazer') || pName.contains('suit');
+        }).toList();
+      } else if (name == 'outerwear') {
+        filtered = allClothes.where((p) {
+          final pName = p.productName.toLowerCase();
+          return pName.contains('jacket') ||
+              pName.contains('coat') ||
+              pName.contains('parka') ||
+              pName.contains('hoodie') ||
+              pName.contains('wear');
+        }).toList();
+      } else if (name == 'pants') {
+        filtered = allClothes
+            .where((p) => p.productName.toLowerCase().contains('pants'))
+            .toList();
+      } else if (name == 'jeans') {
+        filtered = allClothes
+            .where((p) => p.productName.toLowerCase().contains('jeans'))
+            .toList();
+      } else if (name == 'shorts') {
+        filtered = allClothes
+            .where((p) => p.productName.toLowerCase().contains('shorts'))
+            .toList();
+      } else if (name == 'skirts') {
+        filtered = allClothes
+            .where((p) => p.productName.toLowerCase().contains('skirt'))
+            .toList();
+      } else if (name == 'dresses') {
+        filtered = allClothes
+            .where((p) => p.productName.toLowerCase().contains('dress'))
+            .toList();
+      } else {
+        filtered = allClothes;
+      }
+
+      setState(() {
+        _categoryProducts = filtered;
+        _isCategoryProductsLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isCategoryProductsLoading = false;
+      });
+      print('>>> Error loading subcategory products for $subCategoryName: $e');
     }
   }
 
   Widget _buildCategoryProductsView({required double scale}) {
     final List<String> tags = ['T-shirts', 'Crop tops', 'Sleeveless', 'Shirts'];
-    final filteredProducts = _applyFilters(_categoryProducts);
+    final filtered = _applyFilters(_categoryProducts);
+    final sortedProducts = List<Product>.from(filtered);
+    if (_selectedSort == 'Popular') {
+      sortedProducts
+          .sort((a, b) => (b.reviewCount ?? 0).compareTo(a.reviewCount ?? 0));
+    } else if (_selectedSort == 'Newest') {
+      sortedProducts.sort((a, b) => b.id.compareTo(a.id));
+    } else if (_selectedSort == 'Customer review') {
+      sortedProducts.sort(
+          (a, b) => (b.ratingAverage ?? 0.0).compareTo(a.ratingAverage ?? 0.0));
+    } else if (_selectedSort == 'Price: lowest to high') {
+      sortedProducts.sort((a, b) => a.salePrice.compareTo(b.salePrice));
+    } else if (_selectedSort == 'Price: highest to low') {
+      sortedProducts.sort((a, b) => b.salePrice.compareTo(a.salePrice));
+    }
 
     return Container(
       color: const Color(0xFFF9F9F9),
@@ -816,29 +969,52 @@ class _MainPageState extends State<MainPage> {
           // Custom AppBar
           Container(
             color: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 4 * scale, vertical: 8 * scale),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 18 * scale),
+                  icon: Icon(Icons.arrow_back_ios_new,
+                      color: const Color(0xFF222222), size: 18 * scale),
                   onPressed: () {
                     setState(() {
-                      _currentShopView = 'main'; // Go back to main categories
+                      final name =
+                          _selectedCategory?.categoryName.toLowerCase() ?? '';
+                      final List<String> subCategories = [
+                        'tops',
+                        'shirts & blouses',
+                        'cardigans & sweaters',
+                        'knitwear',
+                        'blazers',
+                        'outerwear',
+                        'pants',
+                        'jeans',
+                        'shorts',
+                        'skirts',
+                        'dresses',
+                      ];
+                      if (subCategories.contains(name)) {
+                        _currentShopView = 'sub_clothes';
+                      } else {
+                        _currentShopView = 'main';
+                      }
                     });
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.search, color: const Color(0xFF222222), size: 24 * scale),
+                  icon: Icon(Icons.search,
+                      color: const Color(0xFF222222), size: 24 * scale),
                   onPressed: () {},
                 ),
               ],
             ),
           ),
-          
+
           // Large Title
           Padding(
-            padding: EdgeInsets.fromLTRB(16 * scale, 12 * scale, 16 * scale, 12 * scale),
+            padding: EdgeInsets.fromLTRB(
+                16 * scale, 12 * scale, 16 * scale, 12 * scale),
             child: Text(
               _selectedCategory?.categoryName ?? 'Products',
               style: GoogleFonts.outfit(
@@ -885,7 +1061,8 @@ class _MainPageState extends State<MainPage> {
           // Filters and Sorting Bar
           Container(
             color: const Color(0xFFF9F9F9),
-            padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 16 * scale, vertical: 8 * scale),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -895,7 +1072,8 @@ class _MainPageState extends State<MainPage> {
                   behavior: HitTestBehavior.opaque,
                   child: Row(
                     children: [
-                      Icon(Icons.filter_list, size: 18 * scale, color: const Color(0xFF222222)),
+                      Icon(Icons.filter_list,
+                          size: 18 * scale, color: const Color(0xFF222222)),
                       SizedBox(width: 6 * scale),
                       Text(
                         'Filters',
@@ -909,19 +1087,24 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ),
                 // Sorting
-                Row(
-                  children: [
-                    Icon(Icons.swap_vert, size: 18 * scale, color: const Color(0xFF222222)),
-                    SizedBox(width: 6 * scale),
-                    Text(
-                      'Price: lowest to high',
-                      style: GoogleFonts.inter(
-                        fontSize: 11 * scale,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF222222),
+                GestureDetector(
+                  onTap: () => _showSortBottomSheet(scale),
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    children: [
+                      Icon(Icons.swap_vert,
+                          size: 18 * scale, color: const Color(0xFF222222)),
+                      SizedBox(width: 6 * scale),
+                      Text(
+                        _selectedSort,
+                        style: GoogleFonts.inter(
+                          fontSize: 11 * scale,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF222222),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 // Layout view switch icon
                 GestureDetector(
@@ -949,23 +1132,26 @@ class _MainPageState extends State<MainPage> {
                       color: Color(0xFFDB3022),
                     ),
                   )
-                : filteredProducts.isEmpty
+                : sortedProducts.isEmpty
                     ? Center(
                         child: Text(
                           'Không tìm thấy sản phẩm nào',
-                          style: GoogleFonts.inter(fontSize: 14 * scale, color: Colors.grey),
+                          style: GoogleFonts.inter(
+                              fontSize: 14 * scale, color: Colors.grey),
                         ),
                       )
                     : _isGridView
                         ? GridView.builder(
-                            padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16 * scale, vertical: 8 * scale),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               crossAxisSpacing: 16 * scale,
                               mainAxisSpacing: 26 * scale,
                               childAspectRatio: 0.59,
                             ),
-                            itemCount: filteredProducts.length,
+                            itemCount: sortedProducts.length,
                             itemBuilder: (context, index) {
                               return LayoutBuilder(
                                 builder: (context, constraints) {
@@ -973,19 +1159,21 @@ class _MainPageState extends State<MainPage> {
                                     width: constraints.maxWidth,
                                     height: constraints.maxHeight,
                                     scale: scale,
-                                    product: filteredProducts[index],
+                                    product: sortedProducts[index],
                                   );
                                 },
                               );
                             },
                           )
                         : ListView.builder(
-                            padding: EdgeInsets.symmetric(horizontal: 16 * scale),
-                            itemCount: filteredProducts.length,
+                            padding:
+                                EdgeInsets.symmetric(horizontal: 16 * scale),
+                            itemCount: sortedProducts.length,
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 24 * scale),
-                                child: _buildTopsProductRowCard(filteredProducts[index], scale),
+                                child: _buildTopsProductRowCard(
+                                    sortedProducts[index], scale),
                               );
                             },
                           ),
@@ -1019,11 +1207,13 @@ class _MainPageState extends State<MainPage> {
     final filtered = _applyFilters(_topsProducts);
     final sortedProducts = List<Product>.from(filtered);
     if (_selectedSort == 'Popular') {
-      sortedProducts.sort((a, b) => (b.reviewCount ?? 0).compareTo(a.reviewCount ?? 0));
+      sortedProducts
+          .sort((a, b) => (b.reviewCount ?? 0).compareTo(a.reviewCount ?? 0));
     } else if (_selectedSort == 'Newest') {
       sortedProducts.sort((a, b) => b.id.compareTo(a.id));
     } else if (_selectedSort == 'Customer review') {
-      sortedProducts.sort((a, b) => (b.ratingAverage ?? 0.0).compareTo(a.ratingAverage ?? 0.0));
+      sortedProducts.sort(
+          (a, b) => (b.ratingAverage ?? 0.0).compareTo(a.ratingAverage ?? 0.0));
     } else if (_selectedSort == 'Price: lowest to high') {
       sortedProducts.sort((a, b) => a.salePrice.compareTo(b.salePrice));
     } else if (_selectedSort == 'Price: highest to low') {
@@ -1038,29 +1228,34 @@ class _MainPageState extends State<MainPage> {
           // Custom AppBar
           Container(
             color: Colors.white,
-            padding: EdgeInsets.symmetric(horizontal: 4 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 4 * scale, vertical: 8 * scale),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new, color: const Color(0xFF222222), size: 18 * scale),
+                  icon: Icon(Icons.arrow_back_ios_new,
+                      color: const Color(0xFF222222), size: 18 * scale),
                   onPressed: () {
                     setState(() {
-                      _currentShopView = 'sub_clothes'; // Go back to Clothes subcategories
+                      _currentShopView =
+                          'sub_clothes'; // Go back to Clothes subcategories
                     });
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.search, color: const Color(0xFF222222), size: 24 * scale),
+                  icon: Icon(Icons.search,
+                      color: const Color(0xFF222222), size: 24 * scale),
                   onPressed: () {},
                 ),
               ],
             ),
           ),
-          
+
           // Large Title
           Padding(
-            padding: EdgeInsets.fromLTRB(16 * scale, 12 * scale, 16 * scale, 12 * scale),
+            padding: EdgeInsets.fromLTRB(
+                16 * scale, 12 * scale, 16 * scale, 12 * scale),
             child: Text(
               "Women's tops",
               style: GoogleFonts.outfit(
@@ -1107,7 +1302,8 @@ class _MainPageState extends State<MainPage> {
           // Filters and Sorting Bar
           Container(
             color: const Color(0xFFF9F9F9),
-            padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
+            padding: EdgeInsets.symmetric(
+                horizontal: 16 * scale, vertical: 8 * scale),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1117,7 +1313,8 @@ class _MainPageState extends State<MainPage> {
                   behavior: HitTestBehavior.opaque,
                   child: Row(
                     children: [
-                      Icon(Icons.filter_list, size: 18 * scale, color: const Color(0xFF222222)),
+                      Icon(Icons.filter_list,
+                          size: 18 * scale, color: const Color(0xFF222222)),
                       SizedBox(width: 6 * scale),
                       Text(
                         'Filters',
@@ -1136,7 +1333,8 @@ class _MainPageState extends State<MainPage> {
                   behavior: HitTestBehavior.opaque,
                   child: Row(
                     children: [
-                      Icon(Icons.swap_vert, size: 18 * scale, color: const Color(0xFF222222)),
+                      Icon(Icons.swap_vert,
+                          size: 18 * scale, color: const Color(0xFF222222)),
                       SizedBox(width: 6 * scale),
                       Text(
                         _selectedSort,
@@ -1179,13 +1377,16 @@ class _MainPageState extends State<MainPage> {
                     ? Center(
                         child: Text(
                           'Không tìm thấy sản phẩm nào',
-                          style: GoogleFonts.inter(fontSize: 14 * scale, color: Colors.grey),
+                          style: GoogleFonts.inter(
+                              fontSize: 14 * scale, color: Colors.grey),
                         ),
                       )
                     : _isGridView
                         ? GridView.builder(
-                            padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 8 * scale),
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 16 * scale, vertical: 8 * scale),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               crossAxisSpacing: 16 * scale,
                               mainAxisSpacing: 26 * scale,
@@ -1206,12 +1407,14 @@ class _MainPageState extends State<MainPage> {
                             },
                           )
                         : ListView.builder(
-                            padding: EdgeInsets.symmetric(horizontal: 16 * scale),
+                            padding:
+                                EdgeInsets.symmetric(horizontal: 16 * scale),
                             itemCount: sortedProducts.length,
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: EdgeInsets.only(bottom: 24 * scale),
-                                child: _buildTopsProductRowCard(sortedProducts[index], scale),
+                                child: _buildTopsProductRowCard(
+                                    sortedProducts[index], scale),
                               );
                             },
                           ),
@@ -1288,7 +1491,8 @@ class _MainPageState extends State<MainPage> {
       behavior: HitTestBehavior.opaque,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 16 * scale),
+        padding:
+            EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 16 * scale),
         color: isSelected ? const Color(0xFFDB3022) : Colors.transparent,
         child: Text(
           optionName,
@@ -1361,7 +1565,8 @@ class _MainPageState extends State<MainPage> {
                                 width: photoW,
                                 height: photoH,
                                 color: const Color(0xFFC4C4C4),
-                                child: const Icon(Icons.image, color: Colors.white),
+                                child: const Icon(Icons.image,
+                                    color: Colors.white),
                               );
                             },
                           )
@@ -1371,11 +1576,12 @@ class _MainPageState extends State<MainPage> {
                             color: const Color(0xFFC4C4C4),
                           ),
                   ),
-                  
+
                   // Product Info
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 8 * scale),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12 * scale, vertical: 8 * scale),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1402,16 +1608,19 @@ class _MainPageState extends State<MainPage> {
                               ),
                             ],
                           ),
-                          
+
                           // Rating and Review Count
                           Row(
                             children: [
                               ...List.generate(5, (i) {
-                                final isFilled = i < (product.ratingAverage ?? 0).floor();
+                                final isFilled =
+                                    i < (product.ratingAverage ?? 0).floor();
                                 return Icon(
                                   Icons.star,
                                   size: 13 * scale,
-                                  color: isFilled ? const Color(0xFFFFBA49) : const Color(0xFF9B9B9B),
+                                  color: isFilled
+                                      ? const Color(0xFFFFBA49)
+                                      : const Color(0xFF9B9B9B),
                                 );
                               }),
                               SizedBox(width: 4 * scale),
@@ -1424,7 +1633,7 @@ class _MainPageState extends State<MainPage> {
                               ),
                             ],
                           ),
-                          
+
                           // Price
                           Text(
                             '${product.salePrice.round()}\$',
@@ -1441,7 +1650,7 @@ class _MainPageState extends State<MainPage> {
                 ],
               ),
             ),
-            
+
             // Favorite button floating on bottom-right corner
             Positioned(
               right: 0,
@@ -1467,7 +1676,9 @@ class _MainPageState extends State<MainPage> {
                   child: Icon(
                     isFavorited ? Icons.favorite : Icons.favorite_border,
                     size: 16 * scale,
-                    color: isFavorited ? const Color(0xFFDB3022) : const Color(0xFF9B9B9B),
+                    color: isFavorited
+                        ? const Color(0xFFDB3022)
+                        : const Color(0xFF9B9B9B),
                   ),
                 ),
               ),
@@ -1488,7 +1699,8 @@ class _ProfileTab extends StatefulWidget {
 }
 
 class _ProfileTabState extends State<_ProfileTab> {
-  String _currentView = 'main'; // 'main', 'orders', 'order_details', or 'settings'
+  String _currentView =
+      'main'; // 'main', 'orders', 'order_details', or 'settings'
   OrderItemData? _selectedOrder;
 
   int _orderCount = 0;
@@ -1516,7 +1728,8 @@ class _ProfileTabState extends State<_ProfileTab> {
       setState(() {
         _orderCount = stats['orderCount'] ?? 0;
         _addressCount = stats['addressCount'] ?? 0;
-        _paymentMethodSummary = stats['paymentMethodSummary'] ?? 'No payment methods';
+        _paymentMethodSummary =
+            stats['paymentMethodSummary'] ?? 'No payment methods';
         _couponCount = stats['couponCount'] ?? 0;
         _reviewCount = stats['reviewCount'] ?? 0;
         _statsLoading = false;
@@ -1549,7 +1762,8 @@ class _ProfileTabState extends State<_ProfileTab> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Simulated adding $type and refreshed database stats!'),
+            content:
+                Text('Simulated adding $type and refreshed database stats!'),
             backgroundColor: const Color(0xFF2E7D32),
             duration: const Duration(seconds: 1),
           ),
@@ -1638,7 +1852,8 @@ class _ProfileTabState extends State<_ProfileTab> {
             child: Align(
               alignment: Alignment.centerRight,
               child: IconButton(
-                icon: Icon(Icons.search, size: 26 * widget.scale, color: const Color(0xFF222222)),
+                icon: Icon(Icons.search,
+                    size: 26 * widget.scale, color: const Color(0xFF222222)),
                 onPressed: () {},
               ),
             ),
@@ -1679,7 +1894,8 @@ class _ProfileTabState extends State<_ProfileTab> {
                   child: CircleAvatar(
                     radius: 32 * widget.scale,
                     backgroundColor: Colors.grey[200],
-                    backgroundImage: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
+                    backgroundImage: user?.avatarUrl != null &&
+                            user!.avatarUrl!.isNotEmpty
                         ? NetworkImage(user.avatarUrl!) as ImageProvider
                         : const AssetImage('assets/images/jang_wonyoung.jpg'),
                   ),
@@ -1717,7 +1933,9 @@ class _ProfileTabState extends State<_ProfileTab> {
           // Menu Items List
           _buildMenuItem(
             title: 'My orders',
-            subtitle: _statsLoading ? 'Loading...' : 'Already have $_orderCount orders',
+            subtitle: _statsLoading
+                ? 'Loading...'
+                : 'Already have $_orderCount orders',
             scale: widget.scale,
             onTap: () {
               setState(() {
@@ -1745,7 +1963,9 @@ class _ProfileTabState extends State<_ProfileTab> {
           ),
           _buildMenuItem(
             title: 'My reviews',
-            subtitle: _statsLoading ? 'Loading...' : 'Reviews for $_reviewCount items',
+            subtitle: _statsLoading
+                ? 'Loading...'
+                : 'Reviews for $_reviewCount items',
             scale: widget.scale,
             onTap: () {},
           ),
@@ -1792,7 +2012,9 @@ class _ProfileTabState extends State<_ProfileTab> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.dashboard_customize, color: const Color(0xFFDB3022), size: 18 * widget.scale),
+                      Icon(Icons.dashboard_customize,
+                          color: const Color(0xFFDB3022),
+                          size: 18 * widget.scale),
                       SizedBox(width: 8 * widget.scale),
                       Text(
                         'Database Sync Simulation',
@@ -1896,13 +2118,16 @@ class _ProfileTabState extends State<_ProfileTab> {
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 4 * scale),
+        contentPadding:
+            EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 4 * scale),
         title: Text(
           title,
           style: GoogleFonts.inter(
             fontSize: 16 * scale,
             fontWeight: FontWeight.w600,
-            color: isDestructive ? const Color(0xFFDB3022) : const Color(0xFF222222),
+            color: isDestructive
+                ? const Color(0xFFDB3022)
+                : const Color(0xFF222222),
           ),
         ),
         subtitle: Padding(
@@ -1934,7 +2159,8 @@ class _ProfileTabState extends State<_ProfileTab> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20 * scale),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 6 * scale),
+        padding:
+            EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 6 * scale),
         decoration: BoxDecoration(
           color: const Color(0xFFF9F9F9),
           border: Border.all(color: const Color(0xFFEEEEEE)),
@@ -1965,7 +2191,8 @@ class _ProfileTabState extends State<_ProfileTab> {
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Đăng xuất?', style: TextStyle(color: Color(0xFF222222))),
+        title: const Text('Đăng xuất?',
+            style: TextStyle(color: Color(0xFF222222))),
         content: const Text(
           'Bạn có chắc muốn đăng xuất không?',
           style: TextStyle(color: Color(0xFF9B9B9B)),
@@ -1973,11 +2200,13 @@ class _ProfileTabState extends State<_ProfileTab> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Hủy', style: TextStyle(color: Color(0xFF9B9B9B))),
+            child:
+                const Text('Hủy', style: TextStyle(color: Color(0xFF9B9B9B))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Đăng xuất', style: TextStyle(color: Color(0xFFDB3022))),
+            child: const Text('Đăng xuất',
+                style: TextStyle(color: Color(0xFFDB3022))),
           ),
         ],
       ),
@@ -1994,7 +2223,6 @@ class _ProfileTabState extends State<_ProfileTab> {
   }
 }
 
-
 // ─────────────────────────────────────────────────────────────
 // Big Banner (Supporting swipe carousel between Main 1 and Main 2 styles)
 // ─────────────────────────────────────────────────────────────
@@ -2003,7 +2231,7 @@ class _BigBanner extends StatefulWidget {
   final double height;
   final double scale;
   final VoidCallback? onCheckPressed;
-  
+
   const _BigBanner({
     super.key,
     required this.height,
@@ -2145,7 +2373,6 @@ class _BigBannerState extends State<_BigBanner> {
               ),
             ),
           ),
-
         ],
       ),
     );
@@ -2245,14 +2472,19 @@ class _ProductCard extends StatelessWidget {
     final topPrice = photoH + 60 * scale;
 
     // Check discount
-    final bool isOnSale = product.comparePrice != null && product.comparePrice! > product.salePrice;
+    final bool isOnSale = product.comparePrice != null &&
+        product.comparePrice! > product.salePrice;
     int discountPercent = 0;
     if (isOnSale) {
-      discountPercent = (((product.comparePrice! - product.salePrice) / product.comparePrice!) * 100).round();
+      discountPercent = (((product.comparePrice! - product.salePrice) /
+                  product.comparePrice!) *
+              100)
+          .round();
     }
 
     // Check if it has NEW tag
-    final bool isNew = product.tags.any((t) => t.tagName.toUpperCase() == 'NEW');
+    final bool isNew =
+        product.tags.any((t) => t.tagName.toUpperCase() == 'NEW');
 
     final String fullImageUrl = product.imageUrl != null
         ? (product.imageUrl!.startsWith('http')
@@ -2306,7 +2538,8 @@ class _ProductCard extends StatelessWidget {
                 left: leftNew,
                 top: topNew,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 8 * scale, vertical: 4 * scale),
                   decoration: BoxDecoration(
                     color: const Color(0xFFDB3022),
                     borderRadius: BorderRadius.circular(29 * scale),
@@ -2329,7 +2562,8 @@ class _ProductCard extends StatelessWidget {
                 left: leftNew,
                 top: topNew,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8 * scale, vertical: 4 * scale),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 8 * scale, vertical: 4 * scale),
                   decoration: BoxDecoration(
                     color: const Color(0xFF222222),
                     borderRadius: BorderRadius.circular(29 * scale),
@@ -2358,7 +2592,9 @@ class _ProductCard extends StatelessWidget {
                     return Icon(
                       Icons.star,
                       size: 13 * scale,
-                      color: isFilled ? const Color(0xFFFFBA49) : const Color(0xFF9B9B9B),
+                      color: isFilled
+                          ? const Color(0xFFFFBA49)
+                          : const Color(0xFF9B9B9B),
                     );
                   }),
                   SizedBox(width: 4 * scale),
@@ -2394,7 +2630,8 @@ class _ProductCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(Icons.favorite_border, size: 16 * scale, color: const Color(0xFF9B9B9B)),
+                  child: Icon(Icons.favorite_border,
+                      size: 16 * scale, color: const Color(0xFF9B9B9B)),
                 ),
               ),
             ),
@@ -2511,9 +2748,22 @@ class _BottomBar extends StatelessWidget {
                 children: [
                   _tabItem(Icons.home, 'Home', index: 0),
                   _tabItem(Icons.shopping_cart_outlined, 'Shop', index: 1),
-                  _tabItem(selectedIndex == 2 ? Icons.shopping_bag : Icons.shopping_bag_outlined, 'Bag', index: 2),
-                  _tabItem(selectedIndex == 3 ? Icons.favorite : Icons.favorite_border, 'Favorites', index: 3),
-                  _tabItem(selectedIndex == 4 ? Icons.person : Icons.person_outline, 'Profile', index: 4),
+                  _tabItem(
+                      selectedIndex == 2
+                          ? Icons.shopping_bag
+                          : Icons.shopping_bag_outlined,
+                      'Bag',
+                      index: 2),
+                  _tabItem(
+                      selectedIndex == 3
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      'Favorites',
+                      index: 3),
+                  _tabItem(
+                      selectedIndex == 4 ? Icons.person : Icons.person_outline,
+                      'Profile',
+                      index: 4),
                 ],
               ),
             ),

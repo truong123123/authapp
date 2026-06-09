@@ -409,7 +409,7 @@ class _BagScreenState extends State<BagScreen> {
                                 : '${AppConstants.baseUrl}${product.imageUrl}')
                             : '';
                         return Container(
-                          height: 104 * scale,
+                          constraints: BoxConstraints(minHeight: 115 * scale),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(8 * scale),
@@ -421,272 +421,279 @@ class _BagScreenState extends State<BagScreen> {
                               ),
                             ],
                           ),
-                          child: Row(
-                            children: [
-                              // Product Image
-                              ClipRRect(
-                                borderRadius: BorderRadius.horizontal(
-                                    left: Radius.circular(8 * scale)),
-                                child: SizedBox(
-                                  width: 104 * scale,
-                                  height: 104 * scale,
-                                  child: imageUrl.isNotEmpty
-                                      ? Image.network(
-                                          imageUrl,
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.center,
-                                          errorBuilder: (_, __, ___) =>
-                                              Container(
+                          child: IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Product Image
+                                ClipRRect(
+                                  borderRadius: BorderRadius.horizontal(
+                                      left: Radius.circular(8 * scale)),
+                                  child: SizedBox(
+                                    width: 115 * scale,
+                                    child: imageUrl.isNotEmpty
+                                        ? Image.network(
+                                            imageUrl,
+                                            fit: BoxFit.cover,
+                                            alignment: Alignment.center,
+                                            errorBuilder: (_, __, ___) =>
+                                                Container(
+                                              color: const Color(0xFFE0E0E0),
+                                              child: const Icon(Icons.image,
+                                                  color: Colors.grey),
+                                            ),
+                                          )
+                                        : Container(
                                             color: const Color(0xFFE0E0E0),
                                             child: const Icon(Icons.image,
                                                 color: Colors.grey),
                                           ),
-                                        )
-                                      : Container(
-                                          color: const Color(0xFFE0E0E0),
-                                          child: const Icon(Icons.image,
-                                              color: Colors.grey),
-                                        ),
-                                ),
-                              ),
-
-                              // Product Info
-                              Expanded(
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 12 * scale,
-                                    vertical: 8 * scale,
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              // Product Name
-                                              Expanded(
-                                                child: Text(
-                                                  product.productName,
-                                                  style: GoogleFonts.outfit(
-                                                    fontSize: 16 * scale,
-                                                    fontWeight: FontWeight.w700,
+                                ),
+
+                                // Product Info
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12 * scale,
+                                      vertical: 6 * scale,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                // Product Name
+                                                Expanded(
+                                                  child: Text(
+                                                    product.productName,
+                                                    style: GoogleFonts.outfit(
+                                                      fontSize: 16 * scale,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: const Color(
+                                                          0xFF222222),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                // Three-dot menu button
+                                                PopupMenuButton<String>(
+                                                  padding: EdgeInsets.zero,
+                                                  constraints: BoxConstraints(
+                                                    minWidth: 32 * scale,
+                                                    minHeight: 32 * scale,
+                                                  ),
+                                                  icon: Icon(
+                                                    Icons.more_vert,
+                                                    color:
+                                                        const Color(0xFF9B9B9B),
+                                                    size: 20 * scale,
+                                                  ),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8 * scale),
+                                                  ),
+                                                  color: Colors.white,
+                                                  elevation: 4,
+                                                  offset:
+                                                      Offset(-10 * scale, 0),
+                                                  onSelected: (value) {
+                                                    if (value == 'favorites') {
+                                                      final favProvider = Provider
+                                                          .of<FavoritesProvider>(
+                                                              context,
+                                                              listen: false);
+                                                      favProvider.addFavorite(
+                                                        item.product,
+                                                        item.selectedSize,
+                                                        item.selectedColor,
+                                                      );
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                              'Added to favorites'),
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                        ),
+                                                      );
+                                                    } else if (value ==
+                                                        'delete') {
+                                                      cartProvider.removeItem(
+                                                        item.product.id,
+                                                        item.selectedSize,
+                                                        item.selectedColor,
+                                                      );
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        SnackBar(
+                                                          content: Text(
+                                                              'Removed ${item.product.productName} from bag'),
+                                                          backgroundColor:
+                                                              Colors.green,
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                  itemBuilder: (context) => [
+                                                    PopupMenuItem<String>(
+                                                      value: 'favorites',
+                                                      height: 36 * scale,
+                                                      child: Center(
+                                                        child: Text(
+                                                          'Add to favorites',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize:
+                                                                11 * scale,
+                                                            color: const Color(
+                                                                0xFF222222),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const PopupMenuDivider(
+                                                        height: 1),
+                                                    PopupMenuItem<String>(
+                                                      value: 'delete',
+                                                      height: 36 * scale,
+                                                      child: Center(
+                                                        child: Text(
+                                                          'Delete from the list',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize:
+                                                                11 * scale,
+                                                            color: const Color(
+                                                                0xFF222222),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            // Color & Size Subtitle
+                                            SizedBox(height: 2 * scale),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  'Color: ',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11 * scale,
+                                                    color:
+                                                        const Color(0xFF9B9B9B),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  item.selectedColor,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11 * scale,
+                                                    color:
+                                                        const Color(0xFF222222),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 12 * scale),
+                                                Text(
+                                                  'Size: ',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11 * scale,
+                                                    color:
+                                                        const Color(0xFF9B9B9B),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  item.selectedSize,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 11 * scale,
+                                                    color:
+                                                        const Color(0xFF222222),
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+
+                                        // Quantity row & Price
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                // Minus Button
+                                                _buildQtyButton(
+                                                  icon: Icons.remove,
+                                                  onTap: () => cartProvider
+                                                      .decrementQuantity(
+                                                    product.id,
+                                                    item.selectedSize,
+                                                    item.selectedColor,
+                                                  ),
+                                                  scale: scale,
+                                                ),
+                                                SizedBox(width: 8 * scale),
+                                                // Quantity value
+                                                Text(
+                                                  '${item.quantity}',
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 14 * scale,
+                                                    fontWeight: FontWeight.w600,
                                                     color:
                                                         const Color(0xFF222222),
                                                   ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
                                                 ),
-                                              ),
-                                              // Three-dot menu button
-                                              PopupMenuButton<String>(
-                                                padding: EdgeInsets.zero,
-                                                constraints: BoxConstraints(
-                                                  minWidth: 32 * scale,
-                                                  minHeight: 32 * scale,
-                                                ),
-                                                icon: Icon(
-                                                  Icons.more_vert,
-                                                  color:
-                                                      const Color(0xFF9B9B9B),
-                                                  size: 20 * scale,
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8 * scale),
-                                                ),
-                                                color: Colors.white,
-                                                elevation: 4,
-                                                offset: Offset(-10 * scale, 0),
-                                                onSelected: (value) {
-                                                  if (value == 'favorites') {
-                                                    final favProvider = Provider
-                                                        .of<FavoritesProvider>(
-                                                            context,
-                                                            listen: false);
-                                                    favProvider.addFavorite(
-                                                      item.product,
-                                                      item.selectedSize,
-                                                      item.selectedColor,
-                                                    );
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text(
-                                                            'Added to favorites'),
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                      ),
-                                                    );
-                                                  } else if (value ==
-                                                      'delete') {
-                                                    cartProvider.removeItem(
-                                                      item.product.id,
-                                                      item.selectedSize,
-                                                      item.selectedColor,
-                                                    );
-                                                    ScaffoldMessenger.of(
-                                                            context)
-                                                        .showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                            'Removed ${item.product.productName} from bag'),
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                      ),
-                                                    );
-                                                  }
-                                                },
-                                                itemBuilder: (context) => [
-                                                  PopupMenuItem<String>(
-                                                    value: 'favorites',
-                                                    height: 36 * scale,
-                                                    child: Center(
-                                                      child: Text(
-                                                        'Add to favorites',
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 11 * scale,
-                                                          color: const Color(
-                                                              0xFF222222),
-                                                        ),
-                                                      ),
-                                                    ),
+                                                SizedBox(width: 8 * scale),
+                                                // Plus Button
+                                                _buildQtyButton(
+                                                  icon: Icons.add,
+                                                  onTap: () => cartProvider
+                                                      .incrementQuantity(
+                                                    product.id,
+                                                    item.selectedSize,
+                                                    item.selectedColor,
                                                   ),
-                                                  const PopupMenuDivider(
-                                                      height: 1),
-                                                  PopupMenuItem<String>(
-                                                    value: 'delete',
-                                                    height: 36 * scale,
-                                                    child: Center(
-                                                      child: Text(
-                                                        'Delete from the list',
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 11 * scale,
-                                                          color: const Color(
-                                                              0xFF222222),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          // Color & Size Subtitle
-                                          SizedBox(height: 2 * scale),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                'Color: ',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 11 * scale,
-                                                  color:
-                                                      const Color(0xFF9B9B9B),
+                                                  scale: scale,
                                                 ),
-                                              ),
-                                              Text(
-                                                item.selectedColor,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 11 * scale,
-                                                  color:
-                                                      const Color(0xFF222222),
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              SizedBox(width: 12 * scale),
-                                              Text(
-                                                'Size: ',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 11 * scale,
-                                                  color:
-                                                      const Color(0xFF9B9B9B),
-                                                ),
-                                              ),
-                                              Text(
-                                                item.selectedSize,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 11 * scale,
-                                                  color:
-                                                      const Color(0xFF222222),
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-
-                                      // Quantity row & Price
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              // Minus Button
-                                              _buildQtyButton(
-                                                icon: Icons.remove,
-                                                onTap: () => cartProvider
-                                                    .decrementQuantity(
-                                                  product.id,
-                                                  item.selectedSize,
-                                                  item.selectedColor,
-                                                ),
-                                                scale: scale,
-                                              ),
-                                              SizedBox(width: 8 * scale),
-                                              // Quantity value
-                                              Text(
-                                                '${item.quantity}',
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 14 * scale,
-                                                  fontWeight: FontWeight.w600,
-                                                  color:
-                                                      const Color(0xFF222222),
-                                                ),
-                                              ),
-                                              SizedBox(width: 8 * scale),
-                                              // Plus Button
-                                              _buildQtyButton(
-                                                icon: Icons.add,
-                                                onTap: () => cartProvider
-                                                    .incrementQuantity(
-                                                  product.id,
-                                                  item.selectedSize,
-                                                  item.selectedColor,
-                                                ),
-                                                scale: scale,
-                                              ),
-                                            ],
-                                          ),
-                                          // Price
-                                          Text(
-                                            '${(product.salePrice * item.quantity).round()}\$',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 14 * scale,
-                                              fontWeight: FontWeight.w700,
-                                              color: const Color(0xFF222222),
+                                              ],
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                            // Price
+                                            Text(
+                                              '${(product.salePrice * item.quantity).round()}\$',
+                                              style: GoogleFonts.inter(
+                                                fontSize: 14 * scale,
+                                                fontWeight: FontWeight.w700,
+                                                color: const Color(0xFF222222),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },

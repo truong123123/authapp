@@ -4,6 +4,7 @@ import com.example.authapp.entity.RefreshToken;
 import com.example.authapp.repository.RefreshTokenRepository;
 import com.example.authapp.security.CustomUserDetails;
 import com.example.authapp.security.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.example.authapp.service.JwtService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

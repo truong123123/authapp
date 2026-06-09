@@ -87,14 +87,19 @@ class OrderDetailsScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        order.orderNo,
-                        style: GoogleFonts.inter(
-                          fontSize: 16 * scale,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF222222),
+                      Expanded(
+                        child: Text(
+                          'Order №${order.orderNo}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 16 * scale,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF222222),
+                          ),
                         ),
                       ),
+                      SizedBox(width: 8 * scale),
                       Text(
                         order.date,
                         style: GoogleFonts.inter(
@@ -192,7 +197,9 @@ class OrderDetailsScreen extends StatelessWidget {
                   _buildInfoRow('Discount:', order.discount, scale),
                   SizedBox(height: 16 * scale),
                   _buildInfoRow(
-                      'Total Amount:', '${order.totalAmount}\$', scale,
+                      'Total Amount:',
+                      '${order.totalAmount % 1 == 0 ? order.totalAmount.toInt() : order.totalAmount}\$',
+                      scale,
                       isTotal: true),
 
                   SizedBox(height: 36 * scale),
@@ -428,7 +435,7 @@ class OrderDetailsScreen extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomRight,
               child: Text(
-                '${item.price}\$',
+                '${item.price % 1 == 0 ? item.price.toInt() : item.price}\$',
                 style: GoogleFonts.inter(
                   fontSize: 14 * scale,
                   fontWeight: FontWeight.w700,
