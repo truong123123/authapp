@@ -496,7 +496,7 @@ class _MainPageState extends State<MainPage> {
                     ),
 
                   // Categories list dynamically loaded
-                  ..._backendCategories.map((cat) {
+                  ..._backendCategories.where((cat) => cat.parentId == null || cat.parentId!.isEmpty).map((cat) {
                     final String fallbackImg =
                         '${AppConstants.baseUrl}/images/cat_${cat.categoryName.toLowerCase().replaceAll(" ", "_")}.jpg';
                     final String imgUrl =
