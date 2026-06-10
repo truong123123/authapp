@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: mobile-app-postgres-db
+    environment:
+      POSTGRES_DB: truongng
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 879779
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: ./backend
+    container_name: mobile-app-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=postgresql
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/truongng
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=879779
+      - GOOGLE_CLIENT_ID=866423970574-tj9c84ci6qvpd1scg3ch8g8fkoi5osn4.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=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
+      - FACEBOOK_CLIENT_ID=1705017310534816
+      - FACEBOOK_CLIENT_SECRET=ec785c94e880559154dc4b18b4d77e77
+      - AUTHORIZED_REDIRECT_URIS=http://localhost:8080/oauth2/redirect.html,http://lvh.me:8080/oauth2/redirect.html,authapp://oauth2/redirect
+
+volumes:
+  postgres_data:
