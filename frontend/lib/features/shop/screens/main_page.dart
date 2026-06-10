@@ -12,6 +12,7 @@ import 'package:le_nhat_truong/features/auth/screens/login_screen.dart';
 import 'package:le_nhat_truong/features/shop/screens/product_detail_screen.dart';
 
 import 'package:le_nhat_truong/features/favorites/screens/favorites_screen.dart';
+import 'package:le_nhat_truong/features/favorites/providers/favorites_provider.dart';
 import 'package:le_nhat_truong/features/cart/screens/bag_screen.dart';
 import 'package:le_nhat_truong/features/orders/screens/my_orders_screen.dart';
 import 'package:le_nhat_truong/features/orders/screens/order_details_screen.dart';
@@ -1515,7 +1516,8 @@ class _MainPageState extends State<MainPage> {
             : '${AppConstants.baseUrl}${product.imageUrl}')
         : '';
 
-    final bool isFavorited = product.productName == 'T-shirt';
+    final favProvider = context.watch<FavoritesProvider>();
+    final bool isFavorited = favProvider.isFavorite(product.id);
 
     return GestureDetector(
       onTap: () {
@@ -1657,7 +1659,9 @@ class _MainPageState extends State<MainPage> {
               bottom: -12 * scale,
               child: GestureDetector(
                 onTap: () {
-                  // Favorite action mockup
+                  final defaultSize = product.sizes.isNotEmpty ? product.sizes.first : 'M';
+                  final defaultColor = product.colors.isNotEmpty ? product.colors.first : 'Black';
+                  favProvider.toggle(product, defaultSize, defaultColor);
                 },
                 child: Container(
                   width: 36 * scale,
@@ -2462,6 +2466,8 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final favProvider = context.watch<FavoritesProvider>();
+    final bool isFavorited = favProvider.isFavorite(product.id);
     final photoH = height * 0.68;
     final topNew = 8 * scale;
     final leftNew = 10 * scale;
@@ -2614,7 +2620,9 @@ class _ProductCard extends StatelessWidget {
               top: topFav,
               child: GestureDetector(
                 onTap: () {
-                  // Favorite Action
+                  final defaultSize = product.sizes.isNotEmpty ? product.sizes.first : 'M';
+                  final defaultColor = product.colors.isNotEmpty ? product.colors.first : 'Black';
+                  favProvider.toggle(product, defaultSize, defaultColor);
                 },
                 child: Container(
                   width: 36 * scale,
@@ -2630,8 +2638,12 @@ class _ProductCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(Icons.favorite_border,
-                      size: 16 * scale, color: const Color(0xFF9B9B9B)),
+                  child: Icon(
+                      isFavorited ? Icons.favorite : Icons.favorite_border,
+                      size: 16 * scale,
+                      color: isFavorited
+                          ? const Color(0xFFDB3022)
+                          : const Color(0xFF9B9B9B)),
                 ),
               ),
             ),
