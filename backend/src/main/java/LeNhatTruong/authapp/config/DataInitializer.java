@@ -258,7 +258,7 @@ public class DataInitializer implements CommandLineRunner {
                                 .productName("Pullover")
                                 .brandName("Mango")
                                 .slug("pullover-mango")
-                                .imageUrl("/images/top1.jpg")
+                                .imageUrl("/images/196821446211474674.webp")
                                 .salePrice(51.0)
                                 .comparePrice(0.0)
                                 .quantity(15)
@@ -298,7 +298,7 @@ public class DataInitializer implements CommandLineRunner {
                                 .productName("Running Sneakers")
                                 .brandName("adidas Originals")
                                 .slug("running-sneakers-adidas")
-                                .imageUrl("/images/cat_shoes.jpg")
+                                .imageUrl("/images/305541155989398952.jpg")
                                 .salePrice(85.0)
                                 .comparePrice(120.0)
                                 .quantity(30)
@@ -338,7 +338,7 @@ public class DataInitializer implements CommandLineRunner {
                                 .productName("Leather Belt")
                                 .brandName("Jack & Jones")
                                 .slug("leather-belt-jack-jones")
-                                .imageUrl("/images/cat_accessories.jpg")
+                                .imageUrl("/images/239324167992268840.webp")
                                 .salePrice(25.0)
                                 .comparePrice(40.0)
                                 .quantity(40)
@@ -358,7 +358,7 @@ public class DataInitializer implements CommandLineRunner {
                                 .productName("Summer Cap")
                                 .brandName("adidas")
                                 .slug("summer-cap-adidas")
-                                .imageUrl("/images/cat_accessories.jpg")
+                                .imageUrl("/images/293578469481928406.webp")
                                 .salePrice(18.0)
                                 .comparePrice(25.0)
                                 .quantity(100)
@@ -804,6 +804,82 @@ public class DataInitializer implements CommandLineRunner {
                                 .tags(new HashSet<>(Set.of(tagNew)))
                                 .build();
 
+                Product p36 = Product.builder()
+                                .productName("Blue Casual Collar Long Sleeve")
+                                .brandName("Mango")
+                                .slug("blue-casual-collar-long-sleeve")
+                                .imageUrl("/images/blue_casual_collar.webp")
+                                .salePrice(45.0)
+                                .comparePrice(0.0)
+                                .quantity(50)
+                                .shortDescription("Áo sơ mi dài tay cổ bẻ phong cách Casual trẻ trung, năng động.")
+                                .productDescription("Áo sơ mi dài tay Mango chất liệu vải dệt cao cấp, mềm mại và thoải mái.")
+                                .productType("simple")
+                                .published(true)
+                                .ratingAverage(5.0)
+                                .reviewCount(0)
+                                .sizes(new HashSet<>(Set.of("S", "M", "L")))
+                                .colors(new HashSet<>(Set.of("Blue", "White")))
+                                .tags(new HashSet<>(Set.of(tagNew)))
+                                .build();
+
+                Product p37 = Product.builder()
+                                .productName("Casual Knitwear")
+                                .brandName("Mango")
+                                .slug("casual-knitwear")
+                                .imageUrl("/images/586453182770123508.webp")
+                                .salePrice(39.0)
+                                .comparePrice(0.0)
+                                .quantity(50)
+                                .shortDescription("Áo len dệt kim mỏng nhẹ")
+                                .productDescription("Áo len dệt kim chất liệu cotton hỗn hợp, mỏng nhẹ phù hợp cho mùa thu.")
+                                .productType("simple")
+                                .published(true)
+                                .ratingAverage(5.0)
+                                .reviewCount(0)
+                                .sizes(new HashSet<>(Set.of("S", "M", "L")))
+                                .colors(new HashSet<>(Set.of("Grey", "Beige")))
+                                .tags(new HashSet<>(Set.of(tagNew)))
+                                .build();
+
+                Product p38 = Product.builder()
+                                .productName("Vibrant Summer T-Shirt")
+                                .brandName("adidas")
+                                .slug("vibrant-summer-tshirt")
+                                .imageUrl("/images/7459155630699928.webp")
+                                .salePrice(29.0)
+                                .comparePrice(0.0)
+                                .quantity(50)
+                                .shortDescription("Áo thun thể thao năng động")
+                                .productDescription("Áo thun thể thao adidas chất liệu thoáng khí, co giãn cực tốt.")
+                                .productType("simple")
+                                .published(true)
+                                .ratingAverage(5.0)
+                                .reviewCount(0)
+                                .sizes(new HashSet<>(Set.of("S", "M", "L")))
+                                .colors(new HashSet<>(Set.of("Black", "White")))
+                                .tags(new HashSet<>(Set.of(tagNew)))
+                                .build();
+
+                Product p39 = Product.builder()
+                                .productName("Chic Woolen Sweater")
+                                .brandName("Dorothy Perkins")
+                                .slug("chic-woolen-sweater")
+                                .imageUrl("/images/28640147625880471.webp")
+                                .salePrice(79.0)
+                                .comparePrice(0.0)
+                                .quantity(50)
+                                .shortDescription("Áo len ấm áp thời trang")
+                                .productDescription("Áo len ấm áp dày dặn từ thương hiệu Dorothy Perkins phong cách nhẹ nhàng.")
+                                .productType("simple")
+                                .published(true)
+                                .ratingAverage(5.0)
+                                .reviewCount(0)
+                                .sizes(new HashSet<>(Set.of("S", "M", "L")))
+                                .colors(new HashSet<>(Set.of("White", "Grey")))
+                                .tags(new HashSet<>(Set.of(tagNew)))
+                                .build();
+
                 p4 = productRepository.save(p4);
                 p5 = productRepository.save(p5);
                 p6 = productRepository.save(p6);
@@ -836,6 +912,10 @@ public class DataInitializer implements CommandLineRunner {
                 p33 = productRepository.save(p33);
                 p34 = productRepository.save(p34);
                 p35 = productRepository.save(p35);
+                p36 = productRepository.save(p36);
+                p37 = productRepository.save(p37);
+                p38 = productRepository.save(p38);
+                p39 = productRepository.save(p39);
 
                 linkProductToCategory(p4, catNew);
                 linkProductToCategory(p5, catClothes);
@@ -869,6 +949,10 @@ public class DataInitializer implements CommandLineRunner {
                 linkProductToCategory(p33, catClothes, catNew);
                 linkProductToCategory(p34, catClothes, catNew);
                 linkProductToCategory(p35, catClothes, catNew);
+                linkProductToCategory(p36, catClothes, catNew);
+                linkProductToCategory(p37, catClothes, catNew);
+                linkProductToCategory(p38, catClothes, catNew);
+                linkProductToCategory(p39, catClothes, catNew);
                 log.info("TOPS and other product data initialized successfully.");
 
         }
