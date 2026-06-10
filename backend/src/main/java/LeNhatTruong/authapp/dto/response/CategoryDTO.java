@@ -19,4 +19,5 @@ public class CategoryDTO {
     private String image;
     private String placeholder;
     private boolean active;
+    private UUID parentId;
 }

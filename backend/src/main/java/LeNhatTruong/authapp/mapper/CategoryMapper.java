@@ -19,6 +19,7 @@ public class CategoryMapper {
                 .image(category.getImage())
                 .placeholder(category.getPlaceholder())
                 .active(category.getActive() != null ? category.getActive() : true)
+                .parentId(category.getParent() != null ? category.getParent().getId() : null)
                 .build();
     }
 }

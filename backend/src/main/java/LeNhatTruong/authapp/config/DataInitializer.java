@@ -54,6 +54,14 @@ public class DataInitializer implements CommandLineRunner {
 
                 List<Category> allCategories = categoryRepository.findAll();
                 for (Category cat : allCategories) {
+                        if (cat.getParent() != null) {
+                                categoryRepository.delete(cat);
+                        }
+                }
+                categoryRepository.flush();
+
+                allCategories = categoryRepository.findAll();
+                for (Category cat : allCategories) {
                         String name = cat.getCategoryName().toLowerCase();
                         if (!name.equals("new") && !name.equals("clothes") && !name.equals("shoes") && !name.equals("accessories")) {
                                 categoryRepository.delete(cat);
@@ -101,6 +109,24 @@ public class DataInitializer implements CommandLineRunner {
                                                 .createdAt(java.time.OffsetDateTime.now())
                                                 .updatedAt(java.time.OffsetDateTime.now())
                                                 .build()));
+
+                // Create subcategories of Clothes
+                List<String> subCategoriesNames = List.of(
+                    "Tops", "Shirts & Blouses", "Cardigans & Sweaters", "Knitwear",
+                    "Blazers", "Outerwear", "Pants", "Jeans", "Shorts", "Skirts", "Dresses"
+                );
+                for (String name : subCategoriesNames) {
+                    if (categoryRepository.findByCategoryNameIgnoreCase(name).isEmpty()) {
+                        categoryRepository.save(Category.builder()
+                                .categoryName(name)
+                                .parent(catClothes)
+                                .active(true)
+                                .createdAt(java.time.OffsetDateTime.now())
+                                .updatedAt(java.time.OffsetDateTime.now())
+                                .build());
+                    }
+                }
+                categoryRepository.flush();
 
                 // Initialize basic products
                 log.info("Initializing basic product and tag data with sizes and colors...");

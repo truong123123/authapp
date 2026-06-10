@@ -669,19 +669,31 @@ class _MainPageState extends State<MainPage> {
   }
 
   Widget _buildSubClothesView({required double scale}) {
-    final List<String> subCategories = [
-      'Tops',
-      'Shirts & Blouses',
-      'Cardigans & Sweaters',
-      'Knitwear',
-      'Blazers',
-      'Outerwear',
-      'Pants',
-      'Jeans',
-      'Shorts',
-      'Skirts',
-      'Dresses',
-    ];
+    final clothesCat = _backendCategories.firstWhere(
+      (c) => c.categoryName.toLowerCase() == 'clothes',
+      orElse: () => CategoryModel(id: '', categoryName: '', active: false),
+    );
+    
+    final List<String> subCategories = _backendCategories
+        .where((c) => c.parentId == clothesCat.id)
+        .map((c) => c.categoryName)
+        .toList();
+
+    if (subCategories.isEmpty) {
+      subCategories.addAll([
+        'Tops',
+        'Shirts & Blouses',
+        'Cardigans & Sweaters',
+        'Knitwear',
+        'Blazers',
+        'Outerwear',
+        'Pants',
+        'Jeans',
+        'Shorts',
+        'Skirts',
+        'Dresses',
+      ]);
+    }
 
     return Container(
       color: const Color(0xFFF9F9F9),

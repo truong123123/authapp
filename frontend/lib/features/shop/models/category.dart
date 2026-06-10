@@ -6,6 +6,7 @@ class CategoryModel {
   final String? image;
   final String? placeholder;
   final bool active;
+  final String? parentId;
 
   CategoryModel({
     required this.id,
@@ -15,6 +16,7 @@ class CategoryModel {
     this.image,
     this.placeholder,
     required this.active,
+    this.parentId,
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class CategoryModel {
       image: json['image'],
       placeholder: json['placeholder'],
       active: json['active'] ?? true,
+      parentId: json['parentId'],
     );
   }
 
@@ -38,6 +41,7 @@ class CategoryModel {
       'image': image,
       'placeholder': placeholder,
       'active': active,
+      'parentId': parentId,
     };
   }
 }
